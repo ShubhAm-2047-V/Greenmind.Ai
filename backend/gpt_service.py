@@ -22,11 +22,14 @@ def analyze_image_with_gpt(image_path):
     base64_image = encode_image(image_path)
 
     prompt = (
-        "Analyze this plant image and provide a detailed diagnosis in JSON format. "
-        "The JSON should have the following keys: "
-        "plant, disease, confidence, description, cause, solution. "
+        "Analyze this plant image and provide a diagnosis in JSON format. "
+        "The JSON must have the keys: plant, disease, confidence, description, cause, solution. "
         "If the plant is healthy, set 'disease' to 'Healthy'. "
         "Confidence should be a percentage string (e.g., '95%'). "
+        "CRITICAL INSTRUCTION: You are talking to a farmer who has no formal education. "
+        "The 'description', 'cause', and 'solution' MUST be written in VERY simple, basic English. "
+        "Use short sentences. Do NOT use scientific words or complex terms. "
+        "Explain it as simply as possible so anyone can understand. "
         "Ensure the output is ONLY the JSON object, nothing else."
     )
 

@@ -1,0 +1,6 @@
+.env
+__pycache__/
+temp/
+models_list.txt
+scratch_list_models.py
+*.py[cod]

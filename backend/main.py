@@ -3,6 +3,7 @@ import shutil
 import uuid
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from gpt_service import analyze_image_with_gpt
 from gemini_service import analyze_image_with_gemini
 from plantid_service import analyze_image_with_plantid
@@ -11,10 +12,19 @@ import io
 
 app = FastAPI(title="Plant Disease Detection AI")
 
+# Add CORS middleware to allow testing from Flutter Web
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+import tempfile
+
 # Ensure temp directory exists
-TEMP_DIR = "temp"
-if not os.path.exists(TEMP_DIR):
-    os.makedirs(TEMP_DIR)
+TEMP_DIR = tempfile.gettempdir()
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...), provider: str = "gemini"):
