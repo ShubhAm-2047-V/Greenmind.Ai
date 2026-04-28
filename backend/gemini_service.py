@@ -33,6 +33,7 @@ def analyze_image_with_gemini(image_path):
             "plant, disease, confidence, description, cause, solution. "
             "If the plant is healthy, set 'disease' to 'Healthy'. "
             "Confidence should be a percentage string (e.g., '95%'). "
+            "Explain the description, cause, and solution in simple, everyday language that a beginner gardener can easily understand. Avoid overly complex scientific jargon or Latin names unless necessary. "
             "Ensure the output is ONLY the JSON object, nothing else."
         )
 
