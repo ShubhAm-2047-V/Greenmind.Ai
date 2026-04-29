@@ -52,13 +52,12 @@ class AuthProvider with ChangeNotifier {
         _isLoggedIn = true;
         _userEmail = data['email'];
         _token = data['access_token'];
+        notifyListeners();
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', true);
         await prefs.setString('userEmail', _userEmail!);
         await prefs.setString('token', _token!);
-        
-        notifyListeners();
         return null; // Success
       }
       final data = json.decode(response.body);
