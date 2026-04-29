@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import '../../providers/language_provider.dart';
 import 'result_screen.dart';
 
 class AnalyzeScreen extends StatefulWidget {
@@ -38,11 +40,15 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
   void _analyze() async {
     if (_currentImage == null) return;
 
+    final langProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final String language = langProvider.isHindi ? "hindi" : "english";
+
     setState(() => _isLoading = true);
 
     try {
       var request = http.MultipartRequest("POST", Uri.parse(_apiUrl));
       request.files.add(await http.MultipartFile.fromPath("file", _currentImage!.path));
+      request.fields['language'] = language;
 
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);

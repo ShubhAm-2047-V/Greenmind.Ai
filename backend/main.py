@@ -28,7 +28,7 @@ import tempfile
 TEMP_DIR = tempfile.gettempdir()
 
 @app.post("/predict")
-async def predict(file: UploadFile = File(...), provider: str = "gemini"):
+async def predict(file: UploadFile = File(...), provider: str = "gemini", language: str = "english"):
     """
     Endpoint to receive an image and return plant disease analysis.
     Supports provider='gpt' or provider='gemini' (default).
@@ -63,7 +63,7 @@ async def predict(file: UploadFile = File(...), provider: str = "gemini"):
             result = analyze_image_with_plantid(temp_path)
         else:
             # Default to Gemini
-            result = analyze_image_with_gemini(temp_path)
+            result = analyze_image_with_gemini(temp_path, language=language)
             
             # Fallback chain: Gemini -> Plant.id -> GPT
             if not result and os.getenv("PLANTID_API_KEY"):
@@ -124,15 +124,16 @@ async def get_weather(city: str = "New Delhi"):
 async def chat(request: dict):
     """
     Endpoint for the chatbot.
-    Expects {"message": "...", "context": "..."}
+    Expects {"message": "...", "context": "...", "language": "..."}
     """
     message = request.get("message")
     context = request.get("context")
+    language = request.get("language", "english")
     
     if not message:
         return JSONResponse(status_code=400, content={"error": "Message is required"})
     
-    response_text = chat_with_gemini(message, context)
+    response_text = chat_with_gemini(message, context, language=language)
     return {"response": response_text}
 
 @app.get("/")

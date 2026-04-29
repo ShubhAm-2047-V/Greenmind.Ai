@@ -30,6 +30,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void _sendMessage() async {
     if (_controller.text.trim().isEmpty) return;
 
+    final langProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final String language = langProvider.isHindi ? "hindi" : "english";
+
     String userInput = _controller.text;
     setState(() {
       _messages.add({"role": "user", "text": userInput});
@@ -43,7 +46,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         headers: {"Content-Type": "application/json"},
         body: json.encode({
           "message": userInput,
-          "context": "Plant: ${widget.resultData['plant']}, Disease: ${widget.resultData['disease']}, Solution: ${widget.resultData['solution']}"
+          "context": "Plant: ${widget.resultData['plant']}, Disease: ${widget.resultData['disease']}, Solution: ${widget.resultData['solution']}",
+          "language": language
         }),
       );
 

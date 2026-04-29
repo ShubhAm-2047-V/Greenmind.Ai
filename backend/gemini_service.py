@@ -12,7 +12,7 @@ api_key = os.getenv("GEMINI_API_KEY")
 if api_key:
     genai.configure(api_key=api_key)
 
-def analyze_image_with_gemini(image_path):
+def analyze_image_with_gemini(image_path, language="english"):
     """
     Sends an image to Gemini 3 Flash API and returns structured plant disease analysis.
     """
@@ -33,7 +33,9 @@ def analyze_image_with_gemini(image_path):
             "plant, disease, confidence, description, cause, solution. "
             "If the plant is healthy, set 'disease' to 'Healthy'. "
             "Confidence should be a percentage string (e.g., '95%'). "
-            "Explain the description, cause, and solution in simple, everyday language that a beginner gardener can easily understand. Avoid overly complex scientific jargon or Latin names unless necessary. "
+            f"RESPONSE LANGUAGE: {language.upper()}. "
+            f"Crucial: All text fields (plant, disease, description, cause, solution) MUST be in {language.upper()}. "
+            "Explain the description, cause, and solution in simple, everyday language that a beginner gardener can easily understand. "
             "Ensure the output is ONLY the JSON object, nothing else."
         )
 
@@ -55,7 +57,7 @@ def analyze_image_with_gemini(image_path):
     except Exception as e:
         print(f"Error in Gemini analysis: {e}")
         return None
-def chat_with_gemini(message, context=None):
+def chat_with_gemini(message, context=None, language="english"):
     """
     Sends a text message to Gemini and returns the response.
     Can take optional context (e.g. disease info) to make it context-aware.
@@ -72,13 +74,30 @@ def chat_with_gemini(message, context=None):
         genai.configure(api_key=current_api_key)
         model = genai.GenerativeModel('gemini-flash-latest')
         
-        system_prompt = "You are GreenMind AI, a helpful plant care and disease expert. Keep your answers concise and friendly."
+        system_prompt = (
+            f"You are GreenMind AI, a friendly and helpful neighborhood gardener. "
+            f"Your goal is to help people take care of their plants using simple, easy-to-follow advice. "
+            f"RESPONSE LANGUAGE: {language.upper()}. "
+            f"Everything you say MUST be in {language.upper()}. "
+            "Talk like a real person, avoid using too much bold text or complex symbols. "
+            "Use simple words, like you're talking to a friend who just started gardening. "
+            "If the user is worried, be very encouraging and tell them their plant can be saved! "
+        )
         if context:
-            system_prompt += f" Context: The user is asking about a plant with the following details: {context}."
+            system_prompt += (
+                f"\n\nIMPORTANT CONTEXT: The user has just analyzed a plant with your app. "
+                f"The analysis results are: {context}. "
+                "Refer to these details if the user asks for more information or clarification."
+            )
         
         response = model.generate_content(f"{system_prompt}\n\nUser: {message}")
         if response and response.text:
-            return response.text
+            # Clean up encoding issues (e.g., smart quotes causing â)
+            text = response.text
+            text = text.replace("â", "'").replace("â", "'").replace("â", "\"").replace("â", "\"")
+            # Also handle common Unicode smart quotes directly
+            text = text.replace("\u2019", "'").replace("\u2018", "'").replace("\u201d", "\"").replace("\u201c", "\"")
+            return text
         return "I processed your request but didn't generate a text response. Please try rephrasing."
 
     except Exception as e:

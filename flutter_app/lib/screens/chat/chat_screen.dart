@@ -21,6 +21,9 @@ class _ChatScreenState extends State<ChatScreen> {
   void _sendMessage() async {
     if (_controller.text.trim().isEmpty) return;
 
+    final langProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final String language = langProvider.isHindi ? "hindi" : "english";
+
     String userInput = _controller.text;
     setState(() {
       _messages.add({"role": "user", "text": userInput});
@@ -32,7 +35,10 @@ class _ChatScreenState extends State<ChatScreen> {
       final response = await http.post(
         Uri.parse("https://greenmindaibackend.vercel.app/chat"),
         headers: {"Content-Type": "application/json"},
-        body: json.encode({"message": userInput}),
+        body: json.encode({
+          "message": userInput,
+          "language": language
+        }),
       );
 
       if (response.statusCode == 200) {
