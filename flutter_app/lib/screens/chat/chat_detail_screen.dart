@@ -60,7 +60,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+        final data = json.decode(utf8.decode(response.bodyBytes));
         setState(() {
           _messages.add({"role": "bot", "text": data["response"]});
         });

@@ -77,14 +77,15 @@ async def predict(file: UploadFile = File(...), provider: str = "gemini", langua
         if not result:
             return JSONResponse(
                 status_code=500,
-                content={"error": f"{provider} analysis failed and no fallback available"}
+                content={"error": f"{provider} analysis failed and no fallback available"},
+                media_type="application/json; charset=utf-8"
             )
             
         # Log which API was used for success
         used_api = result.get("decision", "unknown").replace("_result", "").upper()
         print(f"SUCCESS: Analysis completed using {used_api} API")
             
-        return result
+        return JSONResponse(content=result, media_type="application/json; charset=utf-8")
 
     finally:
         # 4. Cleanup: Delete temp file
@@ -100,7 +101,8 @@ async def get_weather(city: str = "New Delhi"):
     if not api_key:
         return JSONResponse(
             status_code=500,
-            content={"error": "Weather API key not configured on server"}
+            content={"error": "Weather API key not configured on server"},
+            media_type="application/json; charset=utf-8"
         )
 
     url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
@@ -108,16 +110,18 @@ async def get_weather(city: str = "New Delhi"):
     try:
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
-            return response.json()
+            return JSONResponse(content=response.json(), media_type="application/json; charset=utf-8")
         else:
             return JSONResponse(
                 status_code=response.status_code,
-                content={"error": f"Weather API returned {response.status_code}"}
+                content={"error": f"Weather API returned {response.status_code}"},
+                media_type="application/json; charset=utf-8"
             )
     except Exception as e:
         return JSONResponse(
             status_code=500,
-            content={"error": str(e)}
+            content={"error": str(e)},
+            media_type="application/json; charset=utf-8"
         )
 
 @app.post("/chat")
@@ -131,14 +135,24 @@ async def chat(request: dict):
     language = request.get("language", "english")
     
     if not message:
-        return JSONResponse(status_code=400, content={"error": "Message is required"})
+        return JSONResponse(
+            status_code=400, 
+            content={"error": "Message is required"},
+            media_type="application/json; charset=utf-8"
+        )
     
     response_text = chat_with_gemini(message, context, language=language)
-    return {"response": response_text}
+    return JSONResponse(
+        content={"response": response_text},
+        media_type="application/json; charset=utf-8"
+    )
 
 @app.get("/")
 def read_root():
-    return {"message": "Plant Disease Detection API is running. Use POST /predict to analyze images."}
+    return JSONResponse(
+        content={"message": "Plant Disease Detection API is running. Use POST /predict to analyze images."},
+        media_type="application/json; charset=utf-8"
+    )
 
 if __name__ == "__main__":
     import uvicorn

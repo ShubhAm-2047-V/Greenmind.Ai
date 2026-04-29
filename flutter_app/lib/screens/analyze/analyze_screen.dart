@@ -54,7 +54,7 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
+        final Map<String, dynamic> data = json.decode(utf8.decode(response.bodyBytes));
         
         // Check if it's actually a plant
         if (data.containsKey('is_plant') && data['is_plant'] == false) {
