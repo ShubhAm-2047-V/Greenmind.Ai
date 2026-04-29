@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class ChatDetailScreen extends StatefulWidget {
   final Map<String, dynamic> resultData;
@@ -12,6 +14,7 @@ class ChatDetailScreen extends StatefulWidget {
 class _ChatDetailScreenState extends State<ChatDetailScreen> {
   late List<Map<String, String>> _messages;
   final _controller = TextEditingController();
+  bool _isTyping = false;
 
   @override
   void initState() {
@@ -24,24 +27,43 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     ];
   }
 
-  void _sendMessage() {
+  void _sendMessage() async {
     if (_controller.text.trim().isEmpty) return;
 
-    setState(() {
-      _messages.add({"role": "user", "text": _controller.text});
-    });
-
     String userInput = _controller.text;
+    setState(() {
+      _messages.add({"role": "user", "text": userInput});
+      _isTyping = true;
+    });
     _controller.clear();
 
-    // Mock contextual bot response
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
+    try {
+      final response = await http.post(
+        Uri.parse("https://greenmindaibackend.vercel.app/chat"),
+        headers: {"Content-Type": "application/json"},
+        body: json.encode({
+          "message": userInput,
+          "context": "Plant: ${widget.resultData['plant']}, Disease: ${widget.resultData['disease']}, Solution: ${widget.resultData['solution']}"
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
         setState(() {
-          _messages.add({"role": "bot", "text": "Regarding '$userInput' for your ${widget.resultData['plant']}, I recommend referring to the solution provided in the analysis: ${widget.resultData['solution']}"});
+          _messages.add({"role": "bot", "text": data["response"]});
+        });
+      } else {
+        setState(() {
+          _messages.add({"role": "bot", "text": "Sorry, I'm having trouble connecting to my brain."});
         });
       }
-    });
+    } catch (e) {
+      setState(() {
+        _messages.add({"role": "bot", "text": "Network error. Check your connection."});
+      });
+    } finally {
+      setState(() => _isTyping = false);
+    }
   }
 
   @override
@@ -57,8 +79,22 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(15),
-              itemCount: _messages.length,
+              itemCount: _messages.length + (_isTyping ? 1 : 0),
               itemBuilder: (context, index) {
+                if (index == _messages.length && _isTyping) {
+                  return Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: const Text("GreenMind AI is typing...", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.grey)),
+                    ),
+                  );
+                }
                 final msg = _messages[index];
                 bool isUser = msg["role"] == "user";
                 return Align(

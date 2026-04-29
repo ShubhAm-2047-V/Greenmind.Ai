@@ -77,7 +77,9 @@ def chat_with_gemini(message, context=None):
             system_prompt += f" Context: The user is asking about a plant with the following details: {context}."
         
         response = model.generate_content(f"{system_prompt}\n\nUser: {message}")
-        return response.text
+        if response and response.text:
+            return response.text
+        return "I processed your request but didn't generate a text response. Please try rephrasing."
 
     except Exception as e:
         print(f"Error in Gemini chat: {e}")
