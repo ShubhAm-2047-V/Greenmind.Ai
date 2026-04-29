@@ -23,7 +23,7 @@ class WeatherDetailScreen extends StatelessWidget {
           : weather.hasError
               ? Center(
                   child: Text(
-                    "Could not load weather data.",
+                    lang.translate("Could not load weather data."),
                     style: TextStyle(color: Colors.red.shade700, fontSize: 16),
                   ),
                 )
@@ -70,8 +70,8 @@ class WeatherDetailScreen extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            _buildWeatherMetric(Icons.water_drop, "Humidity", "${weather.humidity}%"),
-                            _buildWeatherMetric(Icons.thermostat, "Feels Like", "${weather.temperature + 1.5}°C"), // Dummy feels like
+                            _buildWeatherMetric(Icons.water_drop, lang.translate("Humidity"), "${weather.humidity}%"),
+                            _buildWeatherMetric(Icons.thermostat, lang.translate("Feels Like"), "${weather.temperature + 1.5}°C"), // Dummy feels like
                           ],
                         ),
                       ),
@@ -91,7 +91,7 @@ class WeatherDetailScreen extends StatelessWidget {
                                 Icon(Icons.eco, color: Colors.green.shade700),
                                 const SizedBox(width: 10),
                                 Text(
-                                  "General Plant Care",
+                                  lang.translate("General Plant Care"),
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -102,8 +102,8 @@ class WeatherDetailScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 10),
                             Text(
-                              _getGeneralCareTip(weather.temperature, weather.humidity),
-                              style: TextStyle(fontSize: 15, color: Colors.black87, height: 1.4),
+                              lang.translate(_getGeneralCareTip(weather.temperature, weather.humidity)),
+                              style: const TextStyle(fontSize: 15, color: Colors.black87, height: 1.4),
                             ),
                           ],
                         ),

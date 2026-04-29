@@ -65,7 +65,7 @@ class HomeScreen extends StatelessWidget {
                             children: [
                               const Icon(Icons.error_outline, color: Colors.red),
                               const SizedBox(width: 10),
-                              const Text("Weather unavailable", style: TextStyle(color: Colors.red)),
+                              Text(lang.translate("Weather unavailable"), style: const TextStyle(color: Colors.red)),
                               IconButton(
                                 icon: const Icon(Icons.refresh, size: 20),
                                 onPressed: () => weather.fetchWeather(),
@@ -105,7 +105,7 @@ class HomeScreen extends StatelessWidget {
                                     ],
                                   ),
                                   const SizedBox(height: 5),
-                                  const Text("Humidity", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                  Text(lang.translate("Humidity"), style: const TextStyle(fontSize: 12, color: Colors.grey)),
                                 ],
                               ),
                             ],
@@ -131,14 +131,14 @@ class HomeScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          "Detect Plant Disease",
-                          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                        Text(
+                          lang.translate("Detect Plant Disease"),
+                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 10),
-                        const Text(
-                          "Take a picture of the affected leaf to get instant analysis.",
-                          style: TextStyle(color: Colors.white70),
+                        Text(
+                          lang.translate("Take a picture of the affected leaf to get instant analysis."),
+                          style: const TextStyle(color: Colors.white70),
                         ),
                         const SizedBox(height: 15),
                         ElevatedButton(

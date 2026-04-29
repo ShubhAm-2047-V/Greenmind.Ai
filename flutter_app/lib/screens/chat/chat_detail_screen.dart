@@ -19,13 +19,19 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   bool _isTyping = false;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Initialize messages here because we need context for Provider
+    final lang = Provider.of<LanguageProvider>(context, listen: false);
     String plant = widget.resultData['plant'];
     String disease = widget.resultData['disease'];
     
+    String greeting = lang.isHindi 
+      ? "मैंने देखा कि आपने $disease के साथ $plant का विश्लेषण किया। इसे ठीक करने के बारे में आपके क्या प्रश्न हैं?"
+      : "I see you analyzed a $plant with $disease. What specific questions do you have about treating or managing this?";
+
     _messages = [
-      {"role": "bot", "text": "I see you analyzed a $plant with $disease. What specific questions do you have about treating or managing this?"}
+      {"role": "bot", "text": greeting}
     ];
   }
 

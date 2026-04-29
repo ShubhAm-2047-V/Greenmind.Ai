@@ -69,7 +69,7 @@ class ResultScreen extends StatelessWidget {
                             Icon(Icons.wb_sunny, color: Colors.orange.shade600),
                             const SizedBox(width: 10),
                             Text(
-                              "Environmental Insight",
+                              lang.translate("Environmental Insight"),
                               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue.shade900),
                             ),
                           ],
@@ -78,7 +78,12 @@ class ResultScreen extends StatelessWidget {
                         weather.isLoading 
                           ? const Center(child: CircularProgressIndicator()) 
                           : Text(
-                              EnvironmentalInsights.getInsight(resultData['disease'], weather.temperature, weather.humidity),
+                              EnvironmentalInsights.getInsight(
+                                resultData['disease'], 
+                                weather.temperature, 
+                                weather.humidity,
+                                isHindi: lang.isHindi
+                              ),
                               style: TextStyle(fontSize: 14, height: 1.5, color: Colors.blue.shade900, fontStyle: FontStyle.italic),
                             ),
                       ],
