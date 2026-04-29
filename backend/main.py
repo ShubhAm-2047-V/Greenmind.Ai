@@ -99,9 +99,10 @@ async def get_weather(city: str = "solapur"):
 @app.post("/analyze")
 async def analyze_plant(
     image: UploadFile = File(...),
-    language: str = Form("english")
+    language: str = Form("english"),
+    email: str = Form(None)
 ):
-    temp_path = f"temp_{uuid.uuid4()}.jpg"
+    temp_path = f"/tmp/temp_{uuid.uuid4()}.jpg"
     try:
         contents = await image.read()
         with open(temp_path, "wb") as f:
@@ -114,11 +115,35 @@ async def analyze_plant(
             
         if not result:
             return JSONResponse(status_code=500, content={"error": "AI analysis failed"})
+        
+        # Save to history if email is provided
+        if email and supabase:
+            try:
+                scan_data = {
+                    "user_email": email,
+                    "plant_name": result.get("plant_name", "Unknown"),
+                    "disease_name": result.get("disease", "Healthy"),
+                    "confidence": 0.95 # Mock confidence for now
+                }
+                supabase.table("scans").insert(scan_data).execute()
+            except Exception as e:
+                print(f"Failed to save scan: {e}")
             
         return JSONResponse(content=result, media_type="application/json; charset=utf-8")
     except Exception as e:
         if os.path.exists(temp_path):
             os.remove(temp_path)
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+@app.get("/history")
+async def get_history(email: str):
+    if not supabase:
+        return JSONResponse(status_code=500, content={"error": "Database not connected"})
+    
+    try:
+        response = supabase.table("scans").select("*").eq("user_email", email).order("created_at", desc=True).execute()
+        return JSONResponse(content=response.data)
+    except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 @app.post("/chat")

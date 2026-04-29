@@ -41,7 +41,9 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
     if (_currentImage == null) return;
 
     final langProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final String language = langProvider.isHindi ? "hindi" : "english";
+    final String? email = authProvider.userEmail;
 
     setState(() => _isLoading = true);
 
@@ -49,6 +51,7 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
       var request = http.MultipartRequest("POST", Uri.parse(_apiUrl));
       request.files.add(await http.MultipartFile.fromPath("image", _currentImage!.path));
       request.fields['language'] = language;
+      if (email != null) request.fields['email'] = email;
 
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);

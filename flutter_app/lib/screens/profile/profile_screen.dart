@@ -9,6 +9,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
+    final auth = Provider.of<AuthProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -29,12 +30,12 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 15),
             Text(
-              "Demo User",
+              auth.userEmail?.split('@')[0] ?? "User",
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green.shade900),
             ),
             const SizedBox(height: 5),
             Text(
-              "demo@example.com",
+              auth.userEmail ?? "user@example.com",
               style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 40),
