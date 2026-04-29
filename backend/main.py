@@ -6,7 +6,7 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from gpt_service import analyze_image_with_gpt
-from gemini_service import analyze_image_with_gemini
+from gemini_service import analyze_image_with_gemini, chat_with_gemini
 from plantid_service import analyze_image_with_plantid
 from PIL import Image
 import io
@@ -119,6 +119,21 @@ async def get_weather(city: str = "New Delhi"):
             status_code=500,
             content={"error": str(e)}
         )
+
+@app.post("/chat")
+async def chat(request: dict):
+    """
+    Endpoint for the chatbot.
+    Expects {"message": "...", "context": "..."}
+    """
+    message = request.get("message")
+    context = request.get("context")
+    
+    if not message:
+        return JSONResponse(status_code=400, content={"error": "Message is required"})
+    
+    response_text = chat_with_gemini(message, context)
+    return {"response": response_text}
 
 @app.get("/")
 def read_root():

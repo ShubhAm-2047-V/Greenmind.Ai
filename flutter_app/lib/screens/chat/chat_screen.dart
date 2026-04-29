@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 import '../../providers/language_provider.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -14,25 +16,42 @@ class _ChatScreenState extends State<ChatScreen> {
     {"role": "bot", "text": "Hello! I am GreenMind AI. How can I help you with your plants today?"}
   ];
   final _controller = TextEditingController();
+  bool _isTyping = false;
 
-  void _sendMessage() {
+  void _sendMessage() async {
     if (_controller.text.trim().isEmpty) return;
 
-    setState(() {
-      _messages.add({"role": "user", "text": _controller.text});
-    });
-
     String userInput = _controller.text;
+    setState(() {
+      _messages.add({"role": "user", "text": userInput});
+      _isTyping = true;
+    });
     _controller.clear();
 
-    // Mock bot response
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
+    try {
+      final response = await http.post(
+        Uri.parse("https://greenmindaibackend.vercel.app/chat"),
+        headers: {"Content-Type": "application/json"},
+        body: json.encode({"message": userInput}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
         setState(() {
-          _messages.add({"role": "bot", "text": "I am a simple demo bot. You said: '$userInput'. I am still learning about plant diseases!"});
+          _messages.add({"role": "bot", "text": data["response"]});
+        });
+      } else {
+        setState(() {
+          _messages.add({"role": "bot", "text": "I'm sorry, I'm having trouble connecting to my server right now."});
         });
       }
-    });
+    } catch (e) {
+      setState(() {
+        _messages.add({"role": "bot", "text": "Connection error. Please check your internet."});
+      });
+    } finally {
+      setState(() => _isTyping = false);
+    }
   }
 
   @override
@@ -52,8 +71,22 @@ class _ChatScreenState extends State<ChatScreen> {
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(15),
-              itemCount: _messages.length,
+              itemCount: _messages.length + (_isTyping ? 1 : 0),
               itemBuilder: (context, index) {
+                if (index == _messages.length && _isTyping) {
+                  return Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: const Text("GreenMind AI is typing...", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.grey)),
+                    ),
+                  );
+                }
                 final msg = _messages[index];
                 bool isUser = msg["role"] == "user";
                 return Align(
