@@ -20,7 +20,7 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
   bool _isLoading = false;
 
   // --- BACKEND API CONFIG ---
-  static const String _apiUrl = "https://greenmindaibackend.vercel.app/predict";
+  static const String _apiUrl = "https://greenmindaibackend.vercel.app/analyze";
 
   @override
   void initState() {
@@ -47,7 +47,7 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
 
     try {
       var request = http.MultipartRequest("POST", Uri.parse(_apiUrl));
-      request.files.add(await http.MultipartFile.fromPath("file", _currentImage!.path));
+      request.files.add(await http.MultipartFile.fromPath("image", _currentImage!.path));
       request.fields['language'] = language;
 
       var streamedResponse = await request.send();
@@ -77,7 +77,7 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Error: Failed to get prediction from Vercel")),
+            SnackBar(content: Text("Error ${response.statusCode}: ${response.body}")),
           );
         }
       }

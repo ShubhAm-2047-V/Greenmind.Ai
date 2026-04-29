@@ -7,5 +7,7 @@ google-generativeai
 python-dotenv
 requests
 supabase
+httpx
 python-jose[cryptography]
 passlib[bcrypt]
+bcrypt
