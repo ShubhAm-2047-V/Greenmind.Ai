@@ -28,14 +28,16 @@ def analyze_image_with_gemini(image_path, language="english"):
         model = genai.GenerativeModel('gemini-flash-latest')
 
         prompt = (
-            "Analyze this plant image and provide a detailed diagnosis in JSON format. "
-            "The JSON should have the following keys: "
-            "plant, disease, confidence, description, cause, solution. "
+            "FIRST: Determine if this image contains a plant, leaf, flower, or tree. "
+            "Then provide a detailed diagnosis in JSON format with the following keys: "
+            "is_plant (boolean), plant, disease, confidence, description, cause, solution. "
+            "If it is NOT a plant, set 'is_plant' to false and all other text fields to an empty string. "
+            "If it IS a plant, set 'is_plant' to true and fill the other fields. "
             "If the plant is healthy, set 'disease' to 'Healthy'. "
             "Confidence should be a percentage string (e.g., '95%'). "
             f"RESPONSE LANGUAGE: {language.upper()}. "
             f"Crucial: All text fields (plant, disease, description, cause, solution) MUST be in {language.upper()}. "
-            "Explain the description, cause, and solution in simple, everyday language that a beginner gardener can easily understand. "
+            "Explain the description, cause, and solution in simple, everyday language. "
             "Ensure the output is ONLY the JSON object, nothing else."
         )
 

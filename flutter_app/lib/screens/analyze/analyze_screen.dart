@@ -54,11 +54,24 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> resultData = json.decode(response.body);
+        final Map<String, dynamic> data = json.decode(response.body);
+        
+        // Check if it's actually a plant
+        if (data.containsKey('is_plant') && data['is_plant'] == false) {
+          setState(() => _isLoading = false);
+          _showError(langProvider.isHindi 
+            ? "यह एक पौधा नहीं है। कृपया एक पौधे की छवि अपलोड करें।" 
+            : "This is not a plant. Please upload a plant image.");
+          return;
+        }
+
+        setState(() => _isLoading = false);
         if (mounted) {
-          Navigator.pushReplacement(
+          Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => ResultScreen(resultData: resultData, image: _currentImage)),
+            MaterialPageRoute(
+              builder: (_) => ResultScreen(resultData: data, image: _currentImage),
+            ),
           );
         }
       } else {
@@ -78,6 +91,18 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  void _showError(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
