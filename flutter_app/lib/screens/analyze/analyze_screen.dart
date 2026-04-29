@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import '../../providers/language_provider.dart';
+import '../../providers/auth_provider.dart';
 import 'result_screen.dart';
 
 class AnalyzeScreen extends StatefulWidget {

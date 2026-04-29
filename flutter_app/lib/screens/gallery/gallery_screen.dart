@@ -24,21 +24,36 @@ class _GalleryScreenState extends State<GalleryScreen> {
 
   Future<void> _fetchHistory() async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    if (auth.userEmail == null) return;
+    if (auth.userEmail == null) {
+      setState(() => _isLoading = false);
+      return;
+    }
 
     try {
       final response = await http.get(
         Uri.parse("https://greenmindaibackend.vercel.app/history?email=${auth.userEmail}"),
-      );
+      ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         setState(() {
           _history = json.decode(response.body);
           _isLoading = false;
         });
+      } else {
+        setState(() => _isLoading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Gallery Error ${response.statusCode}: ${response.body}")),
+          );
+        }
       }
     } catch (e) {
       setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Gallery Exception: $e")),
+        );
+      }
     }
   }
 
