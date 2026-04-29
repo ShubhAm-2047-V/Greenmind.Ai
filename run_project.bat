@@ -10,27 +10,18 @@ set "ADB_PATH=%PROJECT_ROOT%platform-tools-latest-windows\platform-tools"
 set "PATH=%PATH%;%FLUTTER_PATH%;%ADB_PATH%"
 
 echo ===================================================
-echo [1/4] Starting FastAPI Backend...
+echo [1/3] Connecting Device...
 echo ===================================================
-:: Start backend in a separate window (ensures dependencies are installed)
-start "GreenMind Backend" cmd /k "cd /d %PROJECT_ROOT%backend && pip install -r requirements.txt && uvicorn main:app --reload --host 0.0.0.0 --port 8000"
-
-echo ===================================================
-echo [2/4] Initializing USB Connection (ADB)...
-echo ===================================================
-echo [IMPORTANT] If using a physical phone, tap "ALLOW" if asked for USB Debugging!
 adb devices
-:: This allows the phone to access the computer's localhost:8000
-adb reverse tcp:8000 tcp:8000
 
 echo ===================================================
-echo [3/4] Initializing Flutter...
+echo [2/3] Initializing Flutter...
 echo ===================================================
 cd /d "%PROJECT_ROOT%flutter_app"
 call flutter pub get
 
 echo ===================================================
-echo [4/4] Building and Running App...
+echo [3/3] Building and Running App...
 echo ===================================================
 :: Ensure we are running on the connected device/emulator
 call flutter run

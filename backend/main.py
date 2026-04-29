@@ -1,6 +1,7 @@
 import os
 import shutil
 import uuid
+import requests
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -89,6 +90,35 @@ async def predict(file: UploadFile = File(...), provider: str = "gemini"):
         # 4. Cleanup: Delete temp file
         if os.path.exists(temp_path):
             os.remove(temp_path)
+
+@app.get("/weather")
+async def get_weather(city: str = "New Delhi"):
+    """
+    Fetch weather data for a given city using OpenWeatherMap.
+    """
+    api_key = os.getenv("WEATHER_API_KEY")
+    if not api_key:
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Weather API key not configured on server"}
+        )
+
+    url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
+    
+    try:
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return JSONResponse(
+                status_code=response.status_code,
+                content={"error": f"Weather API returned {response.status_code}"}
+            )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
 
 @app.get("/")
 def read_root():

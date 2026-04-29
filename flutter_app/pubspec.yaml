@@ -10,10 +10,23 @@ dependencies:
     sdk: flutter
   http: ^1.1.0
   image_picker: ^1.0.4
+  provider: ^6.1.1
+  shared_preferences: ^2.2.2
+  fl_chart: ^0.65.0
+  pdf: ^3.10.6
+  printing: ^5.11.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "assets/logo.png"
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/logo.png
