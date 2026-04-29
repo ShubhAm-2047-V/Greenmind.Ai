@@ -9,15 +9,15 @@ set "ADB_PATH=%PROJECT_ROOT%platform-tools-latest-windows\platform-tools"
 :: Add these to the PATH for this session
 set "PATH=%PATH%;%FLUTTER_PATH%;%ADB_PATH%"
 
-echo ===================================================
-echo [1/3] Connecting Device...
+echo [1/3] Connecting Device and Cleaning Old Version...
 echo ===================================================
 adb devices
+adb uninstall com.example.flutter_app
 
-echo ===================================================
-echo [2/3] Initializing Flutter...
+echo [2/3] Cleaning and Initializing Flutter...
 echo ===================================================
 cd /d "%PROJECT_ROOT%flutter_app"
+call flutter clean
 call flutter pub get
 
 echo ===================================================
