@@ -15,14 +15,41 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _isSignUp = false;
 
-  void _login() async {
+  void _submit() async {
+    if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all fields")),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
-    await Provider.of<AuthProvider>(context, listen: false).login(
-      _emailController.text,
-      _passwordController.text,
-    );
-    // Navigation is handled by main.dart listening to AuthProvider
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    
+    String? error;
+    if (_isSignUp) {
+      error = await auth.register(_emailController.text.trim(), _passwordController.text.trim());
+      if (error == null) {
+        setState(() => _isSignUp = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Registration successful! Please login.")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error)),
+        );
+      }
+    } else {
+      error = await auth.login(_emailController.text.trim(), _passwordController.text.trim());
+      if (error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error)),
+        );
+      }
+    }
+    setState(() => _isLoading = false);
   }
 
   @override
@@ -68,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          lang.translate("Welcome Back!"),
+                          _isSignUp ? lang.translate("Create Account") : lang.translate("Welcome Back!"),
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -77,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          lang.translate("Login to continue"),
+                          _isSignUp ? lang.translate("Join our green community") : lang.translate("Login to continue"),
                           style: TextStyle(color: Colors.green.shade700),
                         ),
                         const SizedBox(height: 30),
@@ -114,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: _isLoading ? null : _login,
+                            onPressed: _isLoading ? null : _submit,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green.shade700,
                               shape: RoundedRectangleBorder(
@@ -124,9 +151,19 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: _isLoading
                                 ? const CircularProgressIndicator(color: Colors.white)
                                 : Text(
-                                    lang.translate("Login"),
+                                    _isSignUp ? lang.translate("Sign Up") : lang.translate("Login"),
                                     style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
                                   ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        TextButton(
+                          onPressed: () => setState(() => _isSignUp = !_isSignUp),
+                          child: Text(
+                            _isSignUp 
+                              ? lang.translate("Already have an account? Login") 
+                              : lang.translate("Don't have an account? Sign Up"),
+                            style: TextStyle(color: Colors.green.shade800, fontWeight: FontWeight.w600),
                           ),
                         ),
                       ],

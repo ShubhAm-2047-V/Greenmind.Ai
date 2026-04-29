@@ -10,8 +10,15 @@ from gemini_service import analyze_image_with_gemini, chat_with_gemini
 from plantid_service import analyze_image_with_plantid
 from PIL import Image
 import io
+from supabase import create_client, Client
+from auth_utils import get_password_hash, verify_password, create_access_token
 
 app = FastAPI(title="Plant Disease Detection AI")
+
+# Supabase Setup
+url: str = os.getenv("SUPABASE_URL")
+key: str = os.getenv("SUPABASE_KEY")
+supabase: Client = create_client(url, key)
 
 # Add CORS middleware to allow testing from Flutter Web
 app.add_middleware(
@@ -146,6 +153,58 @@ async def chat(request: dict):
         content={"response": response_text},
         media_type="application/json; charset=utf-8"
     )
+
+@app.post("/register")
+async def register(request: dict):
+    email = request.get("email")
+    password = request.get("password")
+    
+    if not email or not password:
+        return JSONResponse(status_code=400, content={"error": "Email and password are required"})
+    
+    # Check if user already exists
+    response = supabase.table("users").select("*").eq("email", email).execute()
+    if response.data:
+        return JSONResponse(status_code=400, content={"error": "User already exists"})
+    
+    # Hash password and save to Supabase
+    hashed_password = get_password_hash(password)
+    new_user = {
+        "email": email,
+        "password": hashed_password,
+        "created_at": "now()"
+    }
+    
+    try:
+        supabase.table("users").insert(new_user).execute()
+        return {"message": "User registered successfully"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": f"Registration failed: {str(e)}"})
+
+@app.post("/login")
+async def login_route(request: dict):
+    email = request.get("email")
+    password = request.get("password")
+    
+    if not email or not password:
+        return JSONResponse(status_code=400, content={"error": "Email and password are required"})
+    
+    # Fetch user from Supabase
+    response = supabase.table("users").select("*").eq("email", email).execute()
+    if not response.data:
+        return JSONResponse(status_code=401, content={"error": "Invalid email or password"})
+    
+    user = response.data[0]
+    if not verify_password(password, user["password"]):
+        return JSONResponse(status_code=401, content={"error": "Invalid email or password"})
+    
+    # Create JWT token
+    access_token = create_access_token(data={"sub": email})
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "email": email
+    }
 
 @app.get("/")
 def read_root():

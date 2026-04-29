@@ -6,3 +6,6 @@ pillow
 google-generativeai
 python-dotenv
 requests
+supabase
+python-jose[cryptography]
+passlib[bcrypt]
