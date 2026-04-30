@@ -1,4 +1,4 @@
-# GreenMind AI Backend - Restarting with SMTP
+# GreenMind AI Backend - SMTP & Stability Update
 import os
 import uuid
 import requests
