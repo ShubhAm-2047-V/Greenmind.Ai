@@ -11,6 +11,12 @@ class PdfPreviewScreen extends StatelessWidget {
 
   Future<Uint8List> _generatePdf(PdfPageFormat format, String title) async {
     final pdf = pw.Document(version: PdfVersion.pdf_1_5, compress: true);
+    
+    // Load a font that supports Hindi (Devanagari)
+    final hindiFont = await PdfGoogleFonts.notoSansDevanagariRegular();
+    final hindiFontBold = await PdfGoogleFonts.notoSansDevanagariBold();
+    final defaultStyle = pw.TextStyle(font: hindiFont);
+    final boldStyle = pw.TextStyle(font: hindiFontBold, fontWeight: pw.FontWeight.bold);
 
     pdf.addPage(
       pw.Page(
@@ -19,22 +25,22 @@ class PdfPreviewScreen extends StatelessWidget {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text('GreenMind AI - Analysis Report', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: PdfColors.green800)),
+              pw.Text('GreenMind AI - Analysis Report', style: boldStyle.copyWith(fontSize: 24, color: PdfColors.green800)),
               pw.SizedBox(height: 20),
               pw.Divider(),
               pw.SizedBox(height: 20),
-              _buildPdfRow('Plant:', resultData['plant']),
-              _buildPdfRow('Disease:', resultData['disease']),
-              _buildPdfRow('Confidence:', resultData['confidence']),
+              _buildPdfRow('Plant:', resultData['plant'], boldStyle, defaultStyle),
+              _buildPdfRow('Disease:', resultData['disease'], boldStyle, defaultStyle),
+              _buildPdfRow('Confidence:', resultData['confidence'], boldStyle, defaultStyle),
               pw.SizedBox(height: 20),
-              pw.Text('Description', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-              pw.Text(resultData['description']),
+              pw.Text('Description', style: boldStyle.copyWith(fontSize: 18)),
+              pw.Text(resultData['description'], style: defaultStyle),
               pw.SizedBox(height: 10),
-              pw.Text('Cause', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-              pw.Text(resultData['cause']),
+              pw.Text('Cause', style: boldStyle.copyWith(fontSize: 18)),
+              pw.Text(resultData['cause'], style: defaultStyle),
               pw.SizedBox(height: 10),
-              pw.Text('Solution', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-              pw.Text(resultData['solution']),
+              pw.Text('Solution', style: boldStyle.copyWith(fontSize: 18)),
+              pw.Text(resultData['solution'], style: defaultStyle),
             ],
           );
         },
@@ -44,14 +50,14 @@ class PdfPreviewScreen extends StatelessWidget {
     return pdf.save();
   }
 
-  pw.Widget _buildPdfRow(String label, String value) {
+  pw.Widget _buildPdfRow(String label, String value, pw.TextStyle labelStyle, pw.TextStyle valueStyle) {
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(vertical: 5),
       child: pw.Row(
         children: [
-          pw.Text(label, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+          pw.Text(label, style: labelStyle),
           pw.SizedBox(width: 10),
-          pw.Text(value),
+          pw.Text(value, style: valueStyle),
         ],
       )
     );

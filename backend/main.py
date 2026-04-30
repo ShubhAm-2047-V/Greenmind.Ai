@@ -1,3 +1,4 @@
+# GreenMind AI Backend - Restarting with SMTP
 import os
 import uuid
 import requests
@@ -10,6 +11,7 @@ from PIL import Image
 import io
 from supabase import create_client, Client
 from auth_utils import get_password_hash, verify_password, create_access_token
+from email_service import send_analysis_report
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -115,19 +117,33 @@ async def analyze_plant(
             
         if not result:
             return JSONResponse(status_code=500, content={"error": "AI analysis failed"})
+            
+        if isinstance(result, dict) and result.get("error") == "QUOTA_EXCEEDED":
+            return JSONResponse(status_code=429, content={"error": "Free AI limit reached. Please try again in 1 minute."})
         
-        # Save to history if email is provided
-        if email and supabase:
+        # Save to history and send email (in a separate try block to prevent main failure)
+        if email:
             try:
-                scan_data = {
-                    "user_email": email,
-                    "plant_name": result.get("plant_name", "Unknown"),
-                    "disease_name": result.get("disease", "Healthy"),
-                    "confidence": 0.95 # Mock confidence for now
-                }
-                supabase.table("scans").insert(scan_data).execute()
+                print(f"DEBUG: Processing request for email: {email}")
+                if supabase:
+                    scan_data = {
+                        "user_email": email,
+                        "plant_name": result.get("plant", "Unknown"),
+                        "disease_name": result.get("disease", "Healthy"),
+                        "confidence": 0.95 
+                    }
+                    supabase.table("scans").insert(scan_data).execute()
+                    print(f"DEBUG: Saved to history for {email}")
+                else:
+                    print("DEBUG: Supabase not connected, skipping history save.")
+                
+                # Send email report (only if email is provided)
+                print(f"DEBUG: Attempting to send premium email report to {email}...")
+                send_analysis_report(email, result)
             except Exception as e:
-                print(f"Failed to save scan: {e}")
+                print(f"WARNING: Background task failed (History/Email): {e}")
+        else:
+            print("DEBUG: No email provided, skipping history and email report.")
             
         return JSONResponse(content=result, media_type="application/json; charset=utf-8")
     except Exception as e:

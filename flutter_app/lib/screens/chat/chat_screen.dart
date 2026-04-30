@@ -149,7 +149,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 ],
               ),
             ),
-          )
+          ),
+          const SizedBox(height: 90), // Push input up to clear the floating nav bar
         ],
       ),
     );

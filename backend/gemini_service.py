@@ -24,6 +24,7 @@ API_KEYS = [
 
 # Filter out empty keys
 API_KEYS = [k for k in API_KEYS if k]
+print(f"DEBUG: Found {len(API_KEYS)} Gemini API keys.")
 
 def analyze_image_with_gemini(image_path, language="english"):
     if not API_KEYS:
@@ -37,33 +38,40 @@ def analyze_image_with_gemini(image_path, language="english"):
     JSON structure:
     {{
         "is_plant": boolean,
-        "plant_name": "name of the plant",
+        "plant": "name of the plant",
         "disease": "name of the disease or 'Healthy'",
-        "confidence": float (0-1),
-        "description": "brief description of the condition",
-        "symptoms": ["symptom 1", "symptom 2"],
-        "treatment": ["step 1", "step 2"],
-        "prevention": ["tip 1", "tip 2"]
+        "confidence": "95%", 
+        "description": "brief description",
+        "cause": "what caused this",
+        "solution": "how to fix it"
     }}
+    
+    Note: confidence should be a string (e.g. "95%").
     
     If it is NOT a plant leaf, set is_plant to false.
     """
 
+    all_errors = []
     for i, key in enumerate(API_KEYS):
         try:
             print(f"DEBUG: Trying Gemini API Key #{i+1}...")
             genai.configure(api_key=key)
-            model = genai.GenerativeModel('gemini-1.5-flash')
             
-            img = Image.open(image_path)
-            
-            response = model.generate_content([prompt, img])
+            try:
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                img = Image.open(image_path)
+                response = model.generate_content([prompt, img])
+            except Exception as e:
+                print(f"DEBUG: gemini-2.5-flash failed, trying 2.0-flash... ({e})")
+                model = genai.GenerativeModel('gemini-2.0-flash')
+                img = Image.open(image_path)
+                response = model.generate_content([prompt, img])
             
             if not response or not response.text:
                 print(f"WARNING: Key #{i+1} returned empty response.")
                 continue
                 
-            # Clean up the response (remove ```json ... ```)
+            # Clean up the response
             text = response.text.strip()
             if text.startswith("```json"):
                 text = text[7:-3].strip()
@@ -74,16 +82,13 @@ def analyze_image_with_gemini(image_path, language="english"):
             
         except Exception as e:
             error_msg = str(e)
+            all_errors.append(error_msg)
             print(f"ERROR: Gemini Key #{i+1} failed: {error_msg}")
-            
-            # If it's a quota error, move to next key
-            if "429" in error_msg or "quota" in error_msg.lower():
-                print(f"DEBUG: Key #{i+1} quota exceeded. Rotating...")
-                continue
-            else:
-                # Other errors (invalid key, etc.) - still try next key
-                continue
+            continue
                 
+    if any("429" in err or "quota" in err.lower() for err in all_errors):
+        return {"error": "QUOTA_EXCEEDED"}
+    
     print("CRITICAL: All Gemini API keys failed!")
     return None
 
@@ -96,7 +101,7 @@ def chat_with_gemini(message, context="", language="english"):
     for i, key in enumerate(API_KEYS):
         try:
             genai.configure(api_key=key)
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-2.5-flash')
             response = model.generate_content(full_prompt)
             return response.text
         except Exception as e:
