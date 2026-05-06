@@ -14,6 +14,19 @@ from auth_utils import get_password_hash, verify_password, create_access_token
 from email_service import send_analysis_report
 from dotenv import load_dotenv
 
+def sanitize_for_pdf(text):
+    """Remove or replace characters that the default PDF font doesn't support."""
+    if not text: return ""
+    # Convert to string and handle basic unicode to latin-1
+    try:
+        # Try to encode as latin-1 to see if it's supported
+        text.encode('latin-1')
+        return text
+    except UnicodeEncodeError:
+        # Fallback: remove non-latin characters for the PDF report
+        import re
+        return re.sub(r'[^\x00-\xFF]+', '?', str(text))
+
 load_dotenv()
 
 app = FastAPI(title="Plant Disease Detection AI")
@@ -43,18 +56,18 @@ app.add_middleware(
 @app.post("/register")
 async def register(request: dict):
     if not supabase:
-        return JSONResponse(status_code=500, content={"error": "Database not connected"})
+        return JSONResponse(status_code=500, content={"error": "Database not connected"}, media_type="application/json; charset=utf-8")
     
     email = request.get("email")
     password = request.get("password")
     
     if not email or not password:
-        return JSONResponse(status_code=400, content={"error": "Email and password are required"})
+        return JSONResponse(status_code=400, content={"error": "Email and password are required"}, media_type="application/json; charset=utf-8")
     
     try:
         response = supabase.table("users").select("*").eq("email", email).execute()
         if response.data:
-            return JSONResponse(status_code=400, content={"error": "User already exists"})
+            return JSONResponse(status_code=400, content={"error": "User already exists"}, media_type="application/json; charset=utf-8")
         
         hashed_password = get_password_hash(password)
         new_user = {"email": email, "password": hashed_password}
@@ -96,7 +109,7 @@ async def get_weather(city: str = "solapur"):
         response = requests.get(url)
         return JSONResponse(content=response.json())
     except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(status_code=500, content={"error": str(e)}, media_type="application/json; charset=utf-8")
 
 @app.post("/analyze")
 async def analyze_plant(
@@ -104,7 +117,10 @@ async def analyze_plant(
     language: str = Form("english"),
     email: str = Form(None)
 ):
-    temp_path = f"/tmp/temp_{uuid.uuid4()}.jpg"
+    import tempfile
+    temp_dir = tempfile.gettempdir()
+    temp_path = os.path.join(temp_dir, f"temp_{uuid.uuid4()}.jpg")
+    
     try:
         contents = await image.read()
         with open(temp_path, "wb") as f:
@@ -116,35 +132,63 @@ async def analyze_plant(
             os.remove(temp_path)
             
         if not result:
-            return JSONResponse(status_code=500, content={"error": "AI analysis failed"})
+            return JSONResponse(status_code=500, content={"error": "AI analysis failed (Empty result)"})
             
-        if isinstance(result, dict) and result.get("error") == "QUOTA_EXCEEDED":
-            return JSONResponse(status_code=429, content={"error": "Free AI limit reached. Please try again in 1 minute."})
+        if isinstance(result, dict) and "error" in result:
+            if result.get("error") == "QUOTA_EXCEEDED":
+                return JSONResponse(status_code=429, content={"error": "Free AI limit reached. Please try again in 1 minute."})
+            return JSONResponse(status_code=500, content=result)
         
-        # Save to history and send email (in a separate try block to prevent main failure)
+        # Save to history and send email (in separate try blocks to prevent cross-failure)
+        email_status = "Not requested"
+        history_status = "Not requested"
+        
         if email:
+            # 1. Try to save to Supabase History
             try:
-                print(f"DEBUG: Processing request for email: {email}")
                 if supabase:
+                    # Sanitize confidence (Gemini often returns "95%")
+                    conf_val = result.get("confidence", 0.95)
+                    if isinstance(conf_val, str):
+                        try:
+                            if "%" in conf_val:
+                                conf_val = float(conf_val.replace("%", "").strip()) / 100.0
+                            else:
+                                conf_val = float(conf_val.strip())
+                        except:
+                            conf_val = 0.95
+                    
                     scan_data = {
                         "user_email": email,
                         "plant_name": result.get("plant", "Unknown"),
                         "disease_name": result.get("disease", "Healthy"),
-                        "confidence": 0.95 
+                        "confidence": conf_val,
+                        "description": result.get("description", ""),
+                        "cause": result.get("cause", ""),
+                        "solution": result.get("solution", "")
                     }
-                    supabase.table("scans").insert(scan_data).execute()
-                    print(f"DEBUG: Saved to history for {email}")
+                    save_res = supabase.table("scans").insert(scan_data).execute()
+                    if save_res.data:
+                        history_status = "Saved successfully"
+                        print(f"DEBUG: Saved to history for {email}")
+                    else:
+                        history_status = "Failed to save (No data returned)"
                 else:
-                    print("DEBUG: Supabase not connected, skipping history save.")
-                
-                # Send email report (only if email is provided)
-                print(f"DEBUG: Attempting to send premium email report to {email}...")
-                send_analysis_report(email, result)
-            except Exception as e:
-                print(f"WARNING: Background task failed (History/Email): {e}")
-        else:
-            print("DEBUG: No email provided, skipping history and email report.")
+                    history_status = "Database not connected"
+            except Exception as db_e:
+                print(f"WARNING: Supabase history save failed: {db_e}")
+                history_status = f"Database Error: {str(db_e)}"
             
+            # 2. Try to send Email Report
+            try:
+                success = send_analysis_report(email, result)
+                email_status = "Sent successfully" if success else "Failed to send (Check SMTP)"
+            except Exception as mail_e:
+                print(f"WARNING: Email report failed: {mail_e}")
+                email_status = f"Email Error: {str(mail_e)}"
+        
+        result["email_status"] = email_status
+        result["history_status"] = history_status
         return JSONResponse(content=result, media_type="application/json; charset=utf-8")
     except Exception as e:
         if os.path.exists(temp_path):
@@ -157,10 +201,23 @@ async def get_history(email: str):
         return JSONResponse(status_code=500, content={"error": "Database not connected"})
     
     try:
-        response = supabase.table("scans").select("*").eq("user_email", email).order("created_at", desc=True).execute()
-        return JSONResponse(content=response.data)
+        # Use ilike for case-insensitive email matching
+        response = supabase.table("scans").select("*").ilike("user_email", email).order("created_at", desc=True).execute()
+        return JSONResponse(content=response.data, media_type="application/json; charset=utf-8")
     except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"ERROR in get_history: {error_details}")
+        return JSONResponse(status_code=500, content={"error": str(e), "details": "Check server logs for traceback"}, media_type="application/json; charset=utf-8")
+
+@app.get("/debug_scans")
+async def debug_scans():
+    if not supabase: return {"error": "No DB"}
+    try:
+        res = supabase.table("scans").select("*").limit(5).execute()
+        return {"count": len(res.data), "first_rows": res.data}
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.post("/chat")
 async def chat_bot(request: dict):
@@ -172,8 +229,8 @@ async def chat_bot(request: dict):
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "db_connected": supabase is not None}
+    return {"status": "ok", "db_connected": supabase is not None, "version": "1.0.5"}
 
 @app.get("/")
 def read_root():
-    return {"message": "GreenMind AI API is running"}
+    return {"message": "GreenMind AI API is running", "version": "1.0.5"}

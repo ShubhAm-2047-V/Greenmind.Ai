@@ -1,12 +1,15 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/auth_provider.dart';
 import 'result_screen.dart';
+import '../../widgets/background_wrapper.dart';
 
 class AnalyzeScreen extends StatefulWidget {
   final File? image;
@@ -43,7 +46,7 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
 
     final langProvider = Provider.of<LanguageProvider>(context, listen: false);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final String language = langProvider.isHindi ? "hindi" : "english";
+    final String language = langProvider.languageCode == 'hi' ? "hindi" : (langProvider.languageCode == 'mr' ? "marathi" : "english");
     final String? email = authProvider.userEmail;
 
     setState(() => _isLoading = true);
@@ -63,14 +66,24 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
         // Check if it's actually a plant
         if (data.containsKey('is_plant') && data['is_plant'] == false) {
           setState(() => _isLoading = false);
-          _showError(langProvider.isHindi 
-            ? "यह एक पौधा नहीं है। कृपया एक पौधे की छवि अपलोड करें।" 
-            : "This is not a plant. Please upload a plant image.");
+          _showError(langProvider.translate("This is not a plant. Please upload a plant image."));
           return;
         }
 
         setState(() => _isLoading = false);
         if (mounted) {
+          final String emailStatus = data['email_status'] ?? "";
+          final String historyStatus = data['history_status'] ?? "";
+
+          if (email != null && historyStatus == "Saved successfully") {
+             ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(langProvider.translate("Scan saved to Gallery")),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -79,18 +92,10 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
           );
         }
       } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error ${response.statusCode}: ${response.body}")),
-          );
-        }
+        setState(() => _isLoading = false);
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Cannot connect to Vercel server. Check internet.")),
-        );
-      }
+      // Error is handled by finally for loading state
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -112,67 +117,104 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final lang = Provider.of<LanguageProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Analyze'),
+        title: Text(lang.translate('Analyze')),
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Colors.green.shade900,
         automaticallyImplyLeading: widget.image != null, // Show back only if came from camera
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _currentImage != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Image.file(_currentImage!, height: 300, width: 300, fit: BoxFit.cover),
-                    )
-                  : Container(
-                      height: 300,
-                      width: 300,
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade50,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.green.shade300, width: 2),
-                      ),
-                      child: Center(
-                        child: Icon(Icons.image, size: 80, color: Colors.green.shade300),
-                      ),
-                    ),
-              const SizedBox(height: 30),
-              if (_currentImage == null)
-                ElevatedButton.icon(
-                  onPressed: _pickGalleryImage,
-                  icon: const Icon(Icons.photo_library),
-                  label: const Text("Select from Gallery"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green.shade100,
-                    foregroundColor: Colors.green.shade900,
-                  ),
-                ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: _currentImage == null || _isLoading ? null : _analyze,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green.shade700,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          "Analyze Image",
-                          style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+      body: BackgroundWrapper(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _currentImage != null
+                    ? Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Image.file(_currentImage!, height: 300, width: 300, fit: BoxFit.cover),
+                          ),
+                          if (_isLoading)
+                            Positioned.fill(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.transparent,
+                                      Colors.green.withOpacity(0.3),
+                                      Colors.transparent,
+                                    ],
+                                    stops: const [0.0, 0.5, 1.0],
+                                  ),
+                                ),
+                              ).animate(onPlay: (c) => c.repeat())
+                               .moveY(begin: -300, end: 300, duration: 1.5.seconds, curve: Curves.linear),
+                            ),
+                          if (_isLoading)
+                            Positioned(
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              child: Container(
+                                height: 4,
+                                color: Colors.greenAccent.shade400,
+                              ).animate(onPlay: (c) => c.repeat())
+                               .moveY(begin: 0, end: 300, duration: 1.5.seconds, curve: Curves.linear),
+                            ),
+                        ],
+                      )
+                    : Container(
+                        height: 300,
+                        width: 300,
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.green.shade300, width: 2),
                         ),
+                        child: Center(
+                          child: Icon(Icons.image, size: 80, color: Colors.green.shade300),
+                        ),
+                      ),
+                const SizedBox(height: 30),
+                if (_currentImage == null)
+                  ElevatedButton.icon(
+                    onPressed: _pickGalleryImage,
+                    icon: const Icon(Icons.photo_library),
+                    label: Text(lang.translate("Select from Gallery")),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade100.withOpacity(0.8),
+                      foregroundColor: Colors.green.shade900,
+                    ),
+                  ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton(
+                    onPressed: _currentImage == null || _isLoading ? null : _analyze,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade700,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : Text(
+                            lang.translate("Analyze Image"),
+                            style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

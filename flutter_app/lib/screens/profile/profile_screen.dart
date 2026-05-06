@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/language_provider.dart';
@@ -27,7 +29,7 @@ class ProfileScreen extends StatelessWidget {
               radius: 50,
               backgroundColor: Colors.white,
               child: Icon(Icons.person, size: 60, color: Colors.grey),
-            ),
+            ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack).fadeIn(),
             const SizedBox(height: 15),
             Text(
               auth.userEmail?.split('@')[0] ?? "User",
@@ -40,24 +42,37 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             
-            // Language Toggle
+            // Language Selector
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
               ),
-              child: SwitchListTile(
-                title: Text(lang.translate("Language: English"), style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: const Text("English / हिंदी"),
-                value: lang.isHindi,
-                activeColor: Colors.green.shade700,
-                secondary: Icon(Icons.language, color: Colors.green.shade700),
-                onChanged: (value) {
-                  Provider.of<LanguageProvider>(context, listen: false).toggleLanguage();
-                },
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: Icon(Icons.language, color: Colors.green.shade700),
+                    title: Text(lang.translate("Language"), style: const TextStyle(fontWeight: FontWeight.w600)),
+                    trailing: Text(
+                      lang.languageCode == 'en' ? "English" : 
+                      lang.languageCode == 'hi' ? "हिंदी" : "मराठी",
+                      style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildLangOption(context, lang, "EN", "en"),
+                      _buildLangOption(context, lang, "HI", "hi"),
+                      _buildLangOption(context, lang, "MR", "mr"),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                ],
               ),
-            ),
+            ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.1, end: 0),
             
             const SizedBox(height: 20),
             
@@ -75,8 +90,29 @@ class ProfileScreen extends StatelessWidget {
                   Provider.of<AuthProvider>(context, listen: false).logout();
                 },
               ),
-            ),
+            ).animate().fadeIn(delay: 400.ms).slideX(begin: 0.1, end: 0),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLangOption(BuildContext context, LanguageProvider lang, String label, String code) {
+    bool isSelected = lang.languageCode == code;
+    return GestureDetector(
+      onTap: () => lang.setLanguage(code),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.green.shade700 : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );

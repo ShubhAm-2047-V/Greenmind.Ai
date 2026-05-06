@@ -7,7 +7,16 @@ import 'providers/weather_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/main_screen.dart';
 
+import 'package:flutter/services.dart';
+
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ),
+  );
   runApp(
     MultiProvider(
       providers: [

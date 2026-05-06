@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+
 import 'package:provider/provider.dart';
 import '../../providers/weather_provider.dart';
 import '../../providers/language_provider.dart';
@@ -36,7 +38,9 @@ class WeatherDetailScreen extends StatelessWidget {
                         weather.getWeatherIcon(),
                         size: 100,
                         color: Colors.blue.shade400,
-                      ),
+                      ).animate(onPlay: (c) => c.repeat(reverse: true))
+                       .moveY(begin: -10, end: 10, duration: 2.seconds, curve: Curves.easeInOut)
+                       .fadeIn(duration: 800.ms),
                       const SizedBox(height: 20),
                       Text(
                         "${weather.temperature}°C",
@@ -45,14 +49,14 @@ class WeatherDetailScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           color: Colors.green.shade900,
                         ),
-                      ),
+                      ).animate().fadeIn(delay: 200.ms).scale(begin: const Offset(0.8, 0.8)),
                       Text(
-                        weather.condition,
+                        lang.translate(weather.condition),
                         style: TextStyle(
                           fontSize: 24,
                           color: Colors.grey.shade700,
                         ),
-                      ),
+                      ).animate().fadeIn(delay: 300.ms),
                       const SizedBox(height: 40),
                       Container(
                         padding: const EdgeInsets.all(20),
@@ -107,7 +111,7 @@ class WeatherDetailScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                      ),
+                      ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.2, end: 0),
                     ],
                   ),
                 ),

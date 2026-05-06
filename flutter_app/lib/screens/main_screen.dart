@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+
 import 'package:provider/provider.dart';
 import '../providers/language_provider.dart';
 
 import 'home/home_screen.dart';
 import 'gallery/gallery_screen.dart';
-import 'analyze/analyze_screen.dart';
 import 'chat/chat_screen.dart';
 import 'profile/profile_screen.dart';
+import 'home/camera_capture_screen.dart';
+import '../widgets/background_wrapper.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -16,12 +19,11 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 2; // Default to Analyze or Home
+  int _selectedIndex = 0; // Default to Home
 
   final List<Widget> _screens = [
     const HomeScreen(),
     const GalleryScreen(),
-    const AnalyzeScreen(),
     const ChatScreen(),
     const ProfileScreen(),
   ];
@@ -29,80 +31,115 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
+    bool isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          IndexedStack(
-            index: _selectedIndex,
-            children: _screens,
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: _buildNavBar(lang),
-          ),
-        ],
+      resizeToAvoidBottomInset: false, // Prevent the FAB from jumping
+      body: BackgroundWrapper(
+        child: Stack(
+          children: [
+            AnimatedSwitcher(
+              duration: 400.ms,
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.05, 0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  ),
+                );
+              },
+              child: Container(
+                key: ValueKey<int>(_selectedIndex),
+                child: _screens[_selectedIndex],
+              ),
+            ),
+            if (!isKeyboardVisible)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: _buildNavBar(lang),
+              ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildNavBar(LanguageProvider lang) {
-    return Stack(
-      alignment: Alignment.bottomCenter,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(bottom: 15, left: 16, right: 16),
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.95),
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 15,
-                offset: Offset(0, 5),
-              )
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _navItem(0, Icons.home, lang.translate("Home"), Colors.green),
-              _navItem(1, Icons.image, lang.translate("Gallery"), Colors.blue),
-              const SizedBox(width: 60), // Space for FAB
-              _navItem(3, Icons.chat, lang.translate("Chat"), Colors.orange),
-              _navItem(4, Icons.person, lang.translate("Profile"), Colors.purple),
-            ],
-          ),
-        ),
-        Positioned(
-          bottom: 30,
-          child: GestureDetector(
-            onTap: () => setState(() => _selectedIndex = 2),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              height: _selectedIndex == 2 ? 70 : 60,
-              width: _selectedIndex == 2 ? 70 : 60,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2E7D32), Color(0xFF66BB6A)],
-                ),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.green.withOpacity(0.4),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
-                  )
-                ],
-              ),
-              child: const Icon(Icons.document_scanner, color: Colors.white, size: 30),
+    return Container(
+      height: 120,
+      color: Colors.transparent,
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          // The Navigation Bar Background
+          Container(
+            margin: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+            height: 70,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(35),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 5),
+                )
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(child: _navItem(0, Icons.home_rounded, lang.translate("Home"), Colors.green.shade800)),
+                Expanded(child: _navItem(1, Icons.image_rounded, lang.translate("Gallery"), Colors.blue.shade700)),
+                const SizedBox(width: 80), // Space for FAB
+                Expanded(child: _navItem(2, Icons.chat_bubble_rounded, lang.translate("Chat"), Colors.orange.shade800)),
+                Expanded(child: _navItem(3, Icons.person_rounded, lang.translate("Profile"), Colors.purple.shade700)),
+              ],
             ),
           ),
-        ),
-      ],
+          
+          // Floating Camera Button
+          Positioned(
+            bottom: 25,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const CameraCaptureScreen()));
+              },
+              child: Container(
+                height: 75,
+                width: 75,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF2E7D32), Color(0xFF66BB6A)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.green.withOpacity(0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 8),
+                    )
+                  ],
+                ),
+                child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 32),
+              ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+                .scale(begin: const Offset(1, 1), end: const Offset(1.1, 1.1), duration: 1.5.seconds, curve: Curves.easeInOut)
+                .shimmer(delay: 3.seconds, duration: 1.5.seconds, color: Colors.white24)
+                .boxShadow(begin: BoxShadow(color: Colors.green.withOpacity(0.3), blurRadius: 15), end: BoxShadow(color: Colors.green.withOpacity(0.6), blurRadius: 30), duration: 1.5.seconds),
+            ),
+          ).animate().slideY(begin: 1, end: 0, duration: 600.ms, curve: Curves.easeOutBack),
+        ],
+      ),
     );
   }
 
@@ -111,25 +148,28 @@ class _MainScreenState extends State<MainScreen> {
 
     return GestureDetector(
       onTap: () => setState(() => _selectedIndex = index),
-      child: AnimatedScale(
-        duration: const Duration(milliseconds: 200),
-        scale: isSelected ? 1.15 : 1.0,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: isSelected ? color : Colors.grey.shade400, size: 28),
-            const SizedBox(height: 4),
-            Text(
-              label, 
-              style: TextStyle(
-                color: isSelected ? color : Colors.grey.shade400, 
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal
-              )
-            ),
-          ],
-        ),
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon, 
+            color: isSelected ? color : Colors.grey.shade400, 
+            size: 30
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label, 
+            style: TextStyle(
+              color: isSelected ? color : Colors.grey.shade400, 
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            )
+          ),
+        ],
       ),
-    );
+    ).animate(target: isSelected ? 1 : 0)
+     .scale(begin: const Offset(1, 1), end: const Offset(1.15, 1.15), duration: 200.ms)
+     .shimmer(duration: 1.seconds, color: color.withOpacity(0.2));
   }
 }
