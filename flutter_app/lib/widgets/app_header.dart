@@ -41,18 +41,40 @@ class AppHeader extends StatelessWidget {
             ),
           ),
           
-          // Leaves decoration (bottom right)
+          // Leaves decoration (bottom right) - Overlapping cluster for high visibility
           Positioned(
-            right: -15,
-            bottom: -15,
+            right: -20,
+            bottom: -20,
             child: Opacity(
-              opacity: 0.5,
-              child: Transform.rotate(
-                angle: -0.2,
-                child: const Icon(Icons.eco, size: 120, color: Color(0xFF1B5E20)),
-              ).animate(onPlay: (c) => c.repeat(reverse: true))
-               .rotate(begin: -0.05, end: 0.05, duration: 3.seconds, curve: Curves.easeInOut)
-               .scale(begin: const Offset(1, 1), end: const Offset(1.1, 1.1), duration: 3.seconds),
+              opacity: 0.85,
+              child: Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  // Lighter background leaf, splayed further left
+                  Transform.rotate(
+                    angle: -0.6,
+                    child: Icon(
+                      Icons.eco_rounded, 
+                      size: 140, 
+                      color: const Color(0xFF4CAF50).withOpacity(0.9),
+                    ),
+                  ).animate(onPlay: (c) => c.repeat(reverse: true))
+                   .rotate(begin: -0.04, end: 0.04, duration: 4.seconds, curve: Curves.easeInOut)
+                   .scale(begin: const Offset(1, 1), end: const Offset(1.05, 1.05), duration: 4.seconds),
+
+                  // Main dark green foreground leaf
+                  Transform.rotate(
+                    angle: -0.15,
+                    child: const Icon(
+                      Icons.eco_rounded, 
+                      size: 175, 
+                      color: Color(0xFF1B5E20),
+                    ),
+                  ).animate(onPlay: (c) => c.repeat(reverse: true))
+                   .rotate(begin: -0.06, end: 0.06, duration: 3.seconds, curve: Curves.easeInOut)
+                   .scale(begin: const Offset(1, 1), end: const Offset(1.08, 1.08), duration: 3.seconds),
+                ],
+              ),
             ),
           ),
 
