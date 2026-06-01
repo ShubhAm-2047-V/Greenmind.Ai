@@ -35,3 +35,4 @@ flutter:
   assets:
     - assets/logo.png
     - assets/images/app_bg.png
+    - assets/preloaded_images/
