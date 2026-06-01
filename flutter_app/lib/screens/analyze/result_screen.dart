@@ -269,7 +269,7 @@ class _ResultScreenState extends State<ResultScreen> {
                         Icons.picture_as_pdf, 
                         lang.translate("Download PDF"), 
                         Colors.red, 
-                        () => Navigator.push(context, MaterialPageRoute(builder: (_) => PdfPreviewScreen(resultData: displayData, languageCode: lang.languageCode)))
+                        () => Navigator.push(context, MaterialPageRoute(builder: (_) => PdfPreviewScreen(resultData: displayData, languageCode: lang.languageCode, image: widget.image)))
                       ),
                       _actionButton(
                         context, 

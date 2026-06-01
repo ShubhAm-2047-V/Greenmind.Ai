@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -7,11 +8,23 @@ import 'package:printing/printing.dart';
 class PdfPreviewScreen extends StatelessWidget {
   final Map<String, dynamic> resultData;
   final String languageCode;
+  final File? image;
 
-  const PdfPreviewScreen({super.key, required this.resultData, this.languageCode = 'en'});
+  const PdfPreviewScreen({super.key, required this.resultData, this.languageCode = 'en', this.image});
 
   Future<Uint8List> _generatePdf(PdfPageFormat format, String title) async {
     final pdf = pw.Document(version: PdfVersion.pdf_1_5, compress: true);
+    
+    // Load analyzed plant image if available
+    pw.MemoryImage? plantImage;
+    if (image != null && image!.existsSync()) {
+      try {
+        final bytes = image!.readAsBytesSync();
+        plantImage = pw.MemoryImage(bytes);
+      } catch (e) {
+        debugPrint("Error reading plant image for PDF: $e");
+      }
+    }
     
     // Labels based on language
     Map<String, Map<String, String>> labels = {
@@ -118,6 +131,22 @@ class PdfPreviewScreen extends StatelessWidget {
               _buildPdfRow(currentLabels['plant']!, resultData['plant'], boldStyle, defaultStyle),
               _buildPdfRow(currentLabels['disease']!, resultData['disease'], boldStyle, defaultStyle),
               _buildPdfRow(currentLabels['confidence']!, resultData['confidence'].toString(), boldStyle, defaultStyle),
+              pw.SizedBox(height: 15),
+              if (plantImage != null) ...[
+                pw.Center(
+                  child: pw.Container(
+                    width: 200,
+                    height: 140,
+                    decoration: pw.BoxDecoration(
+                      border: pw.Border.all(color: PdfColors.grey300, width: 1.5),
+                      borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                    ),
+                    padding: const pw.EdgeInsets.all(3),
+                    child: pw.Image(plantImage, fit: pw.BoxFit.cover),
+                  ),
+                ),
+                pw.SizedBox(height: 15),
+              ],
               pw.SizedBox(height: 20),
               pw.Text(currentLabels['description']!, style: boldStyle.copyWith(fontSize: 18)),
               pw.Text(resultData['description'], style: defaultStyle),
