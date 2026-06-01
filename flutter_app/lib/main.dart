@@ -41,7 +41,7 @@ class PlantDiseaseApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             primarySwatch: Colors.green,
-            scaffoldBackgroundColor: const Color(0xFFE8F5E9),
+            scaffoldBackgroundColor: const Color(0xFFFFFCEE),
             fontFamily: 'Inter', // Assuming standard modern font
           ),
           home: authProvider.isLoggedIn ? const MainScreen() : const LoginScreen(),

@@ -10,9 +10,15 @@ class BackgroundWrapper extends StatelessWidget {
       width: double.infinity,
       height: double.infinity,
       decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/images/app_bg.png'),
-          fit: BoxFit.cover,
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFFFFFCEE), // Soft glowing yellow-cream (mockup top-left)
+            Color(0xFFE5F6EB), // Pastel mint green (mockup center)
+            Color(0xFFE3F2FD), // Soft pastel sky blue (mockup bottom-right)
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          stops: [0.0, 0.55, 1.0],
         ),
       ),
       child: child,
