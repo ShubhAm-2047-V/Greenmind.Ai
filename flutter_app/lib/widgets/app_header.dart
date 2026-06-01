@@ -110,14 +110,39 @@ class AppHeader extends StatelessWidget {
                           height: 1.0,
                         ),
                       ),
-                      Text(
-                        lang.translate("AI Detector"),
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1B5E20),
-                          letterSpacing: -0.5,
-                          height: 1.1,
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: lang.languageCode == 'hi' ? "एआई " : 
+                                    (lang.languageCode == 'mr' ? "एआय " : 
+                                    (lang.languageCode == 'kn' ? "ಎಐ " : 
+                                    (lang.languageCode == 'te' ? "ఐ " : 
+                                    (lang.languageCode == 'gu' ? "એઆઇ " : "AI ")))),
+                              style: const TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF2196F3), // Vibrant Blue
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            TextSpan(
+                              text: lang.translate("AI Detector")
+                                  .replaceAll("एआई ", "")
+                                  .replaceAll("एआय ", "")
+                                  .replaceAll("ಎಐ ", "")
+                                  .replaceAll("ఐ ", "")
+                                  .replaceAll("એઆઇ ", "")
+                                  .replaceAll("AI ", "")
+                                  .trim(),
+                              style: const TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1C5E20), // Dark green
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                          ],
                         ),
                       ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.2, end: 0),
                     ],

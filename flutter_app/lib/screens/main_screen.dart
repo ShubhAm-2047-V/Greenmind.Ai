@@ -117,7 +117,7 @@ class _MainScreenState extends State<MainScreen> {
                 width: 75,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF2E7D32), Color(0xFF66BB6A)],
+                    colors: [Color(0xFF2196F3), Color(0xFF4CAF50)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -125,7 +125,7 @@ class _MainScreenState extends State<MainScreen> {
                   border: Border.all(color: Colors.white, width: 5),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.green.withOpacity(0.3),
+                      color: Colors.blue.withOpacity(0.3),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     )
@@ -134,8 +134,7 @@ class _MainScreenState extends State<MainScreen> {
                 child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 32),
               ).animate(onPlay: (controller) => controller.repeat(reverse: true))
                 .scale(begin: const Offset(1, 1), end: const Offset(1.1, 1.1), duration: 1.5.seconds, curve: Curves.easeInOut)
-                .shimmer(delay: 3.seconds, duration: 1.5.seconds, color: Colors.white24)
-                .boxShadow(begin: BoxShadow(color: Colors.green.withOpacity(0.3), blurRadius: 15), end: BoxShadow(color: Colors.green.withOpacity(0.6), blurRadius: 30), duration: 1.5.seconds),
+                .boxShadow(begin: BoxShadow(color: Colors.blue.withOpacity(0.3), blurRadius: 15), end: BoxShadow(color: Colors.blue.withOpacity(0.6), blurRadius: 30), duration: 1.5.seconds),
             ),
           ).animate().slideY(begin: 1, end: 0, duration: 600.ms, curve: Curves.easeOutBack),
         ],

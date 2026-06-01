@@ -62,41 +62,45 @@ class HeroCard extends StatelessWidget {
                       height: 140,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.04),
+                        color: Colors.blue.withOpacity(0.02),
                         borderRadius: BorderRadius.circular(25),
-                        border: Border.all(color: Colors.green.withOpacity(0.15), width: 1.5),
+                        border: Border.all(color: Colors.blue.withOpacity(0.12), width: 1.5),
                       ),
                       child: Center(
-                        child: Icon(Icons.image_search_rounded, size: 55, color: Colors.green.shade400)
+                        child: Icon(Icons.image_search_outlined, size: 55, color: Colors.blue.shade300)
                           .animate(onPlay: (c) => c.repeat(reverse: true))
                           .scale(begin: const Offset(1, 1), end: const Offset(1.25, 1.25), duration: 1.5.seconds, curve: Curves.easeInOut)
                           .rotate(begin: -0.05, end: 0.05, duration: 2.seconds, curve: Curves.easeInOut),
                       ),
                     ).animate(onPlay: (c) => c.repeat())
-                     .shimmer(duration: 3.seconds, color: Colors.green.withOpacity(0.1))
+                     .shimmer(duration: 3.seconds, color: Colors.blue.withOpacity(0.05))
                      .animate(onPlay: (c) => c.repeat(reverse: true))
-                     .tint(color: Colors.green.withOpacity(0.05), duration: 2.seconds),
+                     .tint(color: Colors.blue.withOpacity(0.02), duration: 2.seconds),
                     const SizedBox(height: 25),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.baseline,
                       textBaseline: TextBaseline.alphabetic,
                       children: [
-                        Text(
+                        const Text(
                           "GreenMind",
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w900,
-                            color: Colors.green.shade900,
+                            color: Color(0xFF0F4E36), // Forest green
                             letterSpacing: -0.5,
                           ),
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          "AI",
-                          style: TextStyle(
+                          lang.languageCode == 'hi' ? "एआई" : 
+                          (lang.languageCode == 'mr' ? "एआय" : 
+                          (lang.languageCode == 'kn' ? "ಎಐ" : 
+                          (lang.languageCode == 'te' ? "ಐ" : 
+                          (lang.languageCode == 'gu' ? "એઆઇ" : "AI")))),
+                          style: const TextStyle(
                             fontSize: 26,
-                            fontWeight: FontWeight.w200,
-                            color: Colors.green.shade700,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF3B82F6), // Vibrant blue
                             letterSpacing: 1.0,
                           ),
                         ),
@@ -108,29 +112,49 @@ class HeroCard extends StatelessWidget {
                       style: TextStyle(color: Colors.grey.shade700, height: 1.5, fontSize: 15),
                     ).animate().fadeIn(delay: 300.ms),
                     const SizedBox(height: 30),
-                    SizedBox(
+                    Container(
                       width: double.infinity,
                       height: 55,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const CameraCaptureScreen()));
-                        },
-                        icon: const Icon(Icons.auto_awesome_outlined),
-                        label: Text(
-                          lang.translate("Analyze Now"),
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF2196F3), Color(0xFF673AB7)], // Blue to Purple gradient
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2E7D32),
-                          foregroundColor: Colors.white,
-                          elevation: 8,
-                          shadowColor: Colors.green.withOpacity(0.5),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF673AB7).withOpacity(0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                          )
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const CameraCaptureScreen()));
+                          },
+                          borderRadius: BorderRadius.circular(18),
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  lang.translate("Analyze Now"),
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ).animate(onPlay: (c) => c.repeat(reverse: true))
-                       .shimmer(delay: 4.seconds, duration: 2.seconds, color: Colors.white24)
-                       .scale(begin: const Offset(1, 1), end: const Offset(1.02, 1.02), duration: 2.seconds),
-                    ),
+                      ),
+                    ).animate(onPlay: (c) => c.repeat(reverse: true))
+                     .shimmer(delay: 4.seconds, duration: 2.seconds, color: Colors.white24)
+                     .scale(begin: const Offset(1, 1), end: const Offset(1.02, 1.02), duration: 2.seconds),
                   ],
                 ),
               ),
