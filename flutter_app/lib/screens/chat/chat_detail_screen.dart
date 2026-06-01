@@ -52,7 +52,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       ? "मैंने देखा कि आपने $disease के साथ $plant का विश्लेषण किया। इसे ठीक करने के बारे में आपके क्या प्रश्न हैं?"
       : (lang.languageCode == 'mr'
         ? "मी पाहिले की तुम्ही $disease सह $plant चे विश्लेषण केले. यावर उपाय करण्याबद्दल तुमचे काय प्रश्न आहेत?"
-        : "I see you analyzed a $plant with $disease. What specific questions do you have about treating or managing this?");
+        : (lang.languageCode == 'kn'
+          ? "ನಾನು ನೀವು $disease ರೊಂದಿಗೆ $plant ಅನ್ನು ವಿಶ್ಲೇಷಿಸಿದ್ದನ್ನು ನೋಡಿದೆ. ಇದನ್ನು ಚಿಕಿತ್ಸೆ ಅಥವಾ ನಿರ್ವಹಿಸುವ ಬಗ್ಗೆ ನಿಮಗೆ ಯಾವ ನಿರ್ದಿಷ್ಟ ಪ್ರಶ್ನೆಗಳಿವೆ?"
+          : (lang.languageCode == 'te'
+            ? "మీరు $disease తో $plant ని విశ్లేషించడాన్ని నేను చూశాను. దీనికి చికిత్స లేదా నిర్వహణ గురించి మీకు ఏవైనా నిర్దిష్ట ప్రశ్నలు ఉన్నాయా?"
+            : (lang.languageCode == 'gu'
+              ? "મેં જોયું કે તમે $disease સાથે $plant નું વિશ્લેષણ કર્યું છે. આની સારવાર અથવા સંચાલન વિશે તમને કયા વિશિષ્ટ પ્રશ્નો છે?"
+              : "I see you analyzed a $plant with $disease. What specific questions do you have about treating or managing this?"))));
 
     _messages = [
       {"role": "bot", "text": greeting}
@@ -73,7 +79,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         final lang = Provider.of<LanguageProvider>(context, listen: false);
         setState(() => _isListening = true);
         _speech.listen(
-          localeId: lang.languageCode == 'hi' ? 'hi_IN' : (lang.languageCode == 'mr' ? 'mr_IN' : 'en_US'),
+          localeId: lang.languageCode == 'hi' ? 'hi_IN' : 
+                    (lang.languageCode == 'mr' ? 'mr_IN' : 
+                    (lang.languageCode == 'kn' ? 'kn_IN' : 
+                    (lang.languageCode == 'te' ? 'te_IN' : 
+                    (lang.languageCode == 'gu' ? 'gu_IN' : 'en_US')))),
           listenFor: const Duration(seconds: 30),
           pauseFor: const Duration(seconds: 3), // Stop after 3s of silence
           onResult: (val) {
@@ -96,7 +106,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     if (_controller.text.trim().isEmpty) return;
 
     final langProvider = Provider.of<LanguageProvider>(context, listen: false);
-    final String language = langProvider.languageCode == 'hi' ? "hindi" : (langProvider.languageCode == 'mr' ? "marathi" : "english");
+    final String language = langProvider.languageCode == 'hi' ? "hindi" : 
+                            (langProvider.languageCode == 'mr' ? "marathi" : 
+                            (langProvider.languageCode == 'kn' ? "kannada" : 
+                            (langProvider.languageCode == 'te' ? "telugu" : 
+                            (langProvider.languageCode == 'gu' ? "gujarati" : "english"))));
 
     String userInput = _controller.text;
     setState(() {
@@ -125,7 +139,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         
         // Auto-read bot response only if voice mode is on
         if (_isVoiceMode) {
-          _ttsService.speak(botResponse, langProvider.languageCode == 'hi' ? 'hi-IN' : (langProvider.languageCode == 'mr' ? 'mr-IN' : 'en-US'));
+          _ttsService.speak(
+            botResponse, 
+            langProvider.languageCode == 'hi' ? 'hi-IN' : 
+            (langProvider.languageCode == 'mr' ? 'mr-IN' : 
+            (langProvider.languageCode == 'kn' ? 'kn-IN' : 
+            (langProvider.languageCode == 'te' ? 'te-IN' : 
+            (langProvider.languageCode == 'gu' ? 'gu-IN' : 'en-US'))))
+          );
         }
 
       } else {
@@ -214,7 +235,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           icon: const Icon(Icons.volume_up, size: 20, color: Colors.green),
                           onPressed: () {
                             final lang = Provider.of<LanguageProvider>(context, listen: false);
-                            _ttsService.speak(msg["text"]!, lang.languageCode == 'hi' ? 'hi-IN' : (lang.languageCode == 'mr' ? 'mr-IN' : 'en-US'));
+                            _ttsService.speak(
+                              msg["text"]!, 
+                              lang.languageCode == 'hi' ? 'hi-IN' : 
+                              (lang.languageCode == 'mr' ? 'mr-IN' : 
+                              (lang.languageCode == 'kn' ? 'kn-IN' : 
+                              (lang.languageCode == 'te' ? 'te-IN' : 
+                              (lang.languageCode == 'gu' ? 'gu-IN' : 'en-US'))))
+                            );
                           },
                         ),
                       ],

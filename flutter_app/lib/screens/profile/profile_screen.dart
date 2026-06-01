@@ -56,20 +56,32 @@ class ProfileScreen extends StatelessWidget {
                     title: Text(lang.translate("Language"), style: const TextStyle(fontWeight: FontWeight.w600)),
                     trailing: Text(
                       lang.languageCode == 'en' ? "English" : 
-                      lang.languageCode == 'hi' ? "हिंदी" : "मराठी",
+                      lang.languageCode == 'hi' ? "हिंदी" : 
+                      lang.languageCode == 'mr' ? "मराठी" : 
+                      lang.languageCode == 'kn' ? "ಕನ್ನಡ" : 
+                      lang.languageCode == 'te' ? "తెలుగు" : "ગુજરાતી",
                       style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.bold),
                     ),
                   ),
                   const Divider(height: 1),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildLangOption(context, lang, "EN", "en"),
-                      _buildLangOption(context, lang, "HI", "hi"),
-                      _buildLangOption(context, lang, "MR", "mr"),
-                    ],
-                  ),
                   const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        _buildLangOption(context, lang, "EN", "en"),
+                        _buildLangOption(context, lang, "HI", "hi"),
+                        _buildLangOption(context, lang, "MR", "mr"),
+                        _buildLangOption(context, lang, "KN", "kn"),
+                        _buildLangOption(context, lang, "TE", "te"),
+                        _buildLangOption(context, lang, "GU", "gu"),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                 ],
               ),
             ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.1, end: 0),

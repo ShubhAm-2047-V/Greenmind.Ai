@@ -53,7 +53,11 @@ class _ChatScreenState extends State<ChatScreen> {
         final lang = Provider.of<LanguageProvider>(context, listen: false);
         setState(() => _isListening = true);
         _speech.listen(
-          localeId: lang.languageCode == 'hi' ? 'hi_IN' : (lang.languageCode == 'mr' ? 'mr_IN' : 'en_US'),
+          localeId: lang.languageCode == 'hi' ? 'hi_IN' : 
+                    (lang.languageCode == 'mr' ? 'mr_IN' : 
+                    (lang.languageCode == 'kn' ? 'kn_IN' : 
+                    (lang.languageCode == 'te' ? 'te_IN' : 
+                    (lang.languageCode == 'gu' ? 'gu_IN' : 'en_US')))),
           listenFor: const Duration(seconds: 30),
           pauseFor: const Duration(seconds: 3), // Stop after 3s of silence
           onResult: (val) {
@@ -75,7 +79,11 @@ class _ChatScreenState extends State<ChatScreen> {
     if (_controller.text.trim().isEmpty) return;
 
     final langProvider = Provider.of<LanguageProvider>(context, listen: false);
-    final String language = langProvider.languageCode == 'hi' ? "hindi" : (langProvider.languageCode == 'mr' ? "marathi" : "english");
+    final String language = langProvider.languageCode == 'hi' ? "hindi" : 
+                            (langProvider.languageCode == 'mr' ? "marathi" : 
+                            (langProvider.languageCode == 'kn' ? "kannada" : 
+                            (langProvider.languageCode == 'te' ? "telugu" : 
+                            (langProvider.languageCode == 'gu' ? "gujarati" : "english"))));
 
     String userInput = _controller.text;
     setState(() {
@@ -103,7 +111,14 @@ class _ChatScreenState extends State<ChatScreen> {
         
         // Auto-read bot response only if voice mode is on
         if (_isVoiceMode) {
-          _ttsService.speak(botResponse, langProvider.languageCode == 'hi' ? 'hi-IN' : (langProvider.languageCode == 'mr' ? 'mr-IN' : 'en-US'));
+          _ttsService.speak(
+            botResponse, 
+            langProvider.languageCode == 'hi' ? 'hi-IN' : 
+            (langProvider.languageCode == 'mr' ? 'mr-IN' : 
+            (langProvider.languageCode == 'kn' ? 'kn-IN' : 
+            (langProvider.languageCode == 'te' ? 'te-IN' : 
+            (langProvider.languageCode == 'gu' ? 'gu-IN' : 'en-US'))))
+          );
         }
       } else {
         setState(() {
@@ -187,12 +202,19 @@ class _ChatScreenState extends State<ChatScreen> {
                       mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
                       children: [
                         if (!isUser) ...[
-                          IconButton(
-                            icon: const Icon(Icons.volume_up, size: 20, color: Colors.green),
-                            onPressed: () {
-                              _ttsService.speak(msg["text"]!, lang.languageCode == 'hi' ? 'hi-IN' : (lang.languageCode == 'mr' ? 'mr-IN' : 'en-US'));
-                            },
-                          ),
+                           IconButton(
+                             icon: const Icon(Icons.volume_up, size: 20, color: Colors.green),
+                             onPressed: () {
+                               _ttsService.speak(
+                                 msg["text"]!, 
+                                 lang.languageCode == 'hi' ? 'hi-IN' : 
+                                 (lang.languageCode == 'mr' ? 'mr-IN' : 
+                                 (lang.languageCode == 'kn' ? 'kn-IN' : 
+                                 (lang.languageCode == 'te' ? 'te-IN' : 
+                                 (lang.languageCode == 'gu' ? 'gu-IN' : 'en-US'))))
+                               );
+                             },
+                           ),
                         ],
                         Flexible(
                           child: Container(

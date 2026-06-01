@@ -41,16 +41,60 @@ class PdfPreviewScreen extends StatelessWidget {
         'cause': 'कारण',
         'solution': 'उपाय',
         'title': 'ग्रीनमाइंड एआई - विश्लेषण अहवाल'
+      },
+      'kn': {
+        'plant': 'ಸಸ್ಯ:',
+        'disease': 'ರೋಗ:',
+        'confidence': 'ವಿಶ್ವಾಸಾರ್ಹತೆ:',
+        'description': 'ವಿವರಣೆ',
+        'cause': 'ಕಾರಣ',
+        'solution': 'ಪರಿಹಾರ',
+        'title': 'ಗ್ರೀನ್‌ಮೈಂಡ್ ಎಐ - ವಿಶ್ಲೇಷಣೆ ವರದಿ'
+      },
+      'te': {
+        'plant': 'మొక్క:',
+        'disease': 'వ్యాధి:',
+        'confidence': 'విశ్వసనీయత:',
+        'description': 'ವಿವರಣೆ',
+        'cause': 'కారణం',
+        'solution': 'పరిష్కారం',
+        'title': 'గ్రీన్ మైండ్ ఐ - విశ్లేషణ నివేదిక'
+      },
+      'gu': {
+        'plant': 'છોડ:',
+        'disease': 'રોગ:',
+        'confidence': 'વિશ્વાસાર્હતા:',
+        'description': 'વર્ણન',
+        'cause': 'કારણ',
+        'solution': 'ઉકેલ',
+        'title': 'ગ્રીનમાઇન્ડ એઆઇ - વિશ્લેષણ અહેવાલ'
       }
     };
 
     final currentLabels = labels[languageCode] ?? labels['en']!;
 
-    // Load a font that supports Hindi (Devanagari)
-    final hindiFont = await PdfGoogleFonts.notoSansDevanagariRegular();
-    final hindiFontBold = await PdfGoogleFonts.notoSansDevanagariBold();
-    final defaultStyle = pw.TextStyle(font: hindiFont);
-    final boldStyle = pw.TextStyle(font: hindiFontBold, fontWeight: pw.FontWeight.bold);
+    // Load a font dynamically based on chosen language code to prevent rendering bugs
+    pw.Font font;
+    pw.Font fontBold;
+    if (languageCode == 'kn') {
+      font = await PdfGoogleFonts.notoSansKannadaRegular();
+      fontBold = await PdfGoogleFonts.notoSansKannadaBold();
+    } else if (languageCode == 'te') {
+      font = await PdfGoogleFonts.notoSansTeluguRegular();
+      fontBold = await PdfGoogleFonts.notoSansTeluguBold();
+    } else if (languageCode == 'gu') {
+      font = await PdfGoogleFonts.notoSansGujaratiRegular();
+      fontBold = await PdfGoogleFonts.notoSansGujaratiBold();
+    } else if (languageCode == 'hi' || languageCode == 'mr') {
+      font = await PdfGoogleFonts.notoSansDevanagariRegular();
+      fontBold = await PdfGoogleFonts.notoSansDevanagariBold();
+    } else {
+      font = await PdfGoogleFonts.notoSansRegular();
+      fontBold = await PdfGoogleFonts.notoSansBold();
+    }
+
+    final defaultStyle = pw.TextStyle(font: font);
+    final boldStyle = pw.TextStyle(font: fontBold, fontWeight: pw.FontWeight.bold);
     // Load the logo
     final logoImage = await imageFromAssetBundle('assets/logo.png');
 

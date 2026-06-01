@@ -116,6 +116,27 @@ class _ResultScreenState extends State<ResultScreen> {
           "कारण: ${data['cause']}. "
           "उपाय: ${data['solution']}. "
           "पर्यावरणीय माहिती: $insight";
+    } else if (lang.languageCode == 'kn') {
+      textToSpeak = "ಸಸ್ಯ: ${data['plant']}. "
+          "ರೋಗ: ${data['disease']}. "
+          "ವಿವರಣೆ: ${data['description']}. "
+          "ಕಾರಣ: ${data['cause']}. "
+          "ಪರಿಹಾರ: ${data['solution']}. "
+          "ಪರಿಸರ ಒಳನೋಟ: $insight";
+    } else if (lang.languageCode == 'te') {
+      textToSpeak = "మొక్క: ${data['plant']}. "
+          "వ్యాధి: ${data['disease']}. "
+          "వివరణ: ${data['description']}. "
+          "కారణం: ${data['cause']}. "
+          "పరిష్కారం: ${data['solution']}. "
+          "పర్యావరణ అంతర్దృష్టి: $insight";
+    } else if (lang.languageCode == 'gu') {
+      textToSpeak = "છોડ: ${data['plant']}. "
+          "રોગ: ${data['disease']}. "
+          "વર્ણન: ${data['description']}. "
+          "કારણ: ${data['cause']}. "
+          "ઉકેલ: ${data['solution']}. "
+          "પર્યાવરણીય આંતરદૃષ્ટિ: $insight";
     } else {
       textToSpeak = "Plant: ${data['plant']}. "
           "Disease: ${data['disease']}. "
@@ -125,7 +146,14 @@ class _ResultScreenState extends State<ResultScreen> {
           "Environmental Insight: $insight";
     }
 
-    _speakContentInternal(textToSpeak, lang.languageCode == 'hi' ? 'hi-IN' : (lang.languageCode == 'mr' ? 'mr-IN' : 'en-US'));
+    _speakContentInternal(
+      textToSpeak, 
+      lang.languageCode == 'hi' ? 'hi-IN' : 
+      (lang.languageCode == 'mr' ? 'mr-IN' : 
+      (lang.languageCode == 'kn' ? 'kn-IN' : 
+      (lang.languageCode == 'te' ? 'te-IN' : 
+      (lang.languageCode == 'gu' ? 'gu-IN' : 'en-US'))))
+    );
   }
 
   void _speakContentInternal(String text, String lang) async {

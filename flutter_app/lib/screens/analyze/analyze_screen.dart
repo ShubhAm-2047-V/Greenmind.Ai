@@ -46,7 +46,11 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
 
     final langProvider = Provider.of<LanguageProvider>(context, listen: false);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final String language = langProvider.languageCode == 'hi' ? "hindi" : (langProvider.languageCode == 'mr' ? "marathi" : "english");
+    final String language = langProvider.languageCode == 'hi' ? "hindi" : 
+                            (langProvider.languageCode == 'mr' ? "marathi" : 
+                            (langProvider.languageCode == 'kn' ? "kannada" : 
+                            (langProvider.languageCode == 'te' ? "telugu" : 
+                            (langProvider.languageCode == 'gu' ? "gujarati" : "english"))));
     final String? email = authProvider.userEmail;
 
     setState(() => _isLoading = true);
