@@ -8,8 +8,8 @@ import 'home/home_screen.dart';
 import 'gallery/gallery_screen.dart';
 import 'chat/chat_screen.dart';
 import 'profile/profile_screen.dart';
-import 'home/camera_capture_screen.dart';
 import '../widgets/background_wrapper.dart';
+import '../utils/image_picker_helper.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -110,7 +110,7 @@ class _MainScreenState extends State<MainScreen> {
             bottom: 25,
             child: GestureDetector(
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const CameraCaptureScreen()));
+                ImagePickerHelper.showImageSourceBottomSheet(context);
               },
               child: Container(
                 height: 75,

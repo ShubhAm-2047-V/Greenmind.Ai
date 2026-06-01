@@ -76,7 +76,6 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
 
         setState(() => _isLoading = false);
         if (mounted) {
-          final String emailStatus = data['email_status'] ?? "";
           final String historyStatus = data['history_status'] ?? "";
 
           if (email != null && historyStatus == "Saved successfully") {

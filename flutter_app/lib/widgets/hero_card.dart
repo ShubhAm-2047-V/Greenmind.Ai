@@ -1,13 +1,33 @@
 import 'dart:ui';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../providers/language_provider.dart';
-import '../screens/home/camera_capture_screen.dart';
+import '../screens/analyze/analyze_screen.dart';
+import '../utils/image_picker_helper.dart';
 
 class HeroCard extends StatelessWidget {
   const HeroCard({super.key});
+
+  Future<void> _pickGalleryImage(BuildContext context) async {
+    final pickedFile = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+      maxWidth: 800,
+      maxHeight: 800,
+    );
+    if (pickedFile != null && context.mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AnalyzeScreen(image: File(pickedFile.path)),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,19 +78,22 @@ class HeroCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      height: 140,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.02),
-                        borderRadius: BorderRadius.circular(25),
-                        border: Border.all(color: Colors.blue.withOpacity(0.12), width: 1.5),
-                      ),
-                      child: Center(
-                        child: Icon(Icons.image_search_outlined, size: 55, color: Colors.blue.shade300)
-                          .animate(onPlay: (c) => c.repeat(reverse: true))
-                          .scale(begin: const Offset(1, 1), end: const Offset(1.25, 1.25), duration: 1.5.seconds, curve: Curves.easeInOut)
-                          .rotate(begin: -0.05, end: 0.05, duration: 2.seconds, curve: Curves.easeInOut),
+                    GestureDetector(
+                      onTap: () => _pickGalleryImage(context),
+                      child: Container(
+                        height: 140,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.02),
+                          borderRadius: BorderRadius.circular(25),
+                          border: Border.all(color: Colors.blue.withOpacity(0.12), width: 1.5),
+                        ),
+                        child: Center(
+                          child: Icon(Icons.image_search_outlined, size: 55, color: Colors.blue.shade300)
+                            .animate(onPlay: (c) => c.repeat(reverse: true))
+                            .scale(begin: const Offset(1, 1), end: const Offset(1.25, 1.25), duration: 1.5.seconds, curve: Curves.easeInOut)
+                            .rotate(begin: -0.05, end: 0.05, duration: 2.seconds, curve: Curves.easeInOut),
+                        ),
                       ),
                     ).animate(onPlay: (c) => c.repeat())
                      .shimmer(duration: 3.seconds, color: Colors.blue.withOpacity(0.05))
@@ -134,7 +157,7 @@ class HeroCard extends StatelessWidget {
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const CameraCaptureScreen()));
+                            ImagePickerHelper.showImageSourceBottomSheet(context);
                           },
                           borderRadius: BorderRadius.circular(18),
                           child: Center(

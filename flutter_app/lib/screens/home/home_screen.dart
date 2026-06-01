@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/weather_provider.dart';
 import '../weather/weather_detail_screen.dart';
-import 'camera_capture_screen.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/hero_card.dart';
 
