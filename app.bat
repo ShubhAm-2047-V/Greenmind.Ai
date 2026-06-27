@@ -33,8 +33,8 @@ echo Please wait...
 
 if not exist "%SDK_DIR%\cmdline-tools" mkdir "%SDK_DIR%\cmdline-tools"
 
-:: Download cmdline-tools using PowerShell
-powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://dl.google.com/android/repository/commandlinetools-win-11076708_latest.zip' -OutFile '%SDK_DIR%\tools.zip'"
+:: Download cmdline-tools using PowerShell (progress bar disabled for 10x speedup)
+powershell -Command "$ProgressPreference = 'SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://dl.google.com/android/repository/commandlinetools-win-11076708_latest.zip' -OutFile '%SDK_DIR%\tools.zip'"
 
 if not exist "%SDK_DIR%\tools.zip" (
     color 0C
@@ -111,7 +111,7 @@ if not exist "%ADB_CMD%" (
         set "ADB_CMD=platform-tools\adb.exe"
     ) else (
         echo [INFO] ADB not found. Downloading platform-tools...
-        powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://dl.google.com/android/repository/platform-tools-latest-windows.zip' -OutFile 'platform-tools.zip'"
+        powershell -Command "$ProgressPreference = 'SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://dl.google.com/android/repository/platform-tools-latest-windows.zip' -OutFile 'platform-tools.zip'"
         powershell -Command "Expand-Archive -Path 'platform-tools.zip' -DestinationPath '.' -Force"
         del platform-tools.zip
         set "ADB_CMD=platform-tools\adb.exe"

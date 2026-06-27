@@ -3,6 +3,7 @@ studio/
 flutter_windows_3.19.6-stable/
 platform-tools-latest-windows/
 platform-tools/
+android-sdk/
 
 # Environments
 .env
