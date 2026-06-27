@@ -187,10 +187,8 @@ install_apk() {
         echo -e "${GREEN}==========================================================${NC}"
         echo -e "${GREEN}                   SUCCESSFULLY FINISHED                   ${NC}"
         echo -e "${GREEN}==========================================================${NC}"
-        echo.
-        echo -e "You can now open GreenMind AI on your phone."
-        echo -e "Enjoy using the app!"
-        echo.
+        echo -e "Greetings From ShubDeep Labs, your app is downloaded on mobile so enjoy your app!"
+        echo
         read -p "Press Enter to exit..."
         exit 0
     else

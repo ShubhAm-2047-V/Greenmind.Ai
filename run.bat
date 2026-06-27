@@ -165,9 +165,7 @@ echo.
 echo ==========================================================
 echo                   SUCCESSFULLY FINISHED                   
 echo ==========================================================
-echo.
-echo You can now open GreenMind AI on your phone.
-echo Enjoy using the app!
+echo Greetings From ShubDeep Labs, your app is downloaded on mobile so enjoy your app!
 echo.
 pause
 exit /b 0
