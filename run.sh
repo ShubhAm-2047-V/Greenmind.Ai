@@ -20,14 +20,33 @@ PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$PROJECT_ROOT"
 
 # 1. Check for the APK file
-APK_FILE="GreenMind.Ai.apk"
-if [ ! -f "$APK_FILE" ]; then
-    echo -e "${RED}[ERROR] $APK_FILE was not found in this folder.${NC}"
-    echo -e "Please make sure you downloaded the complete repository from GitHub."
+APK_FILE=""
+if [ -f "GreenMind.Ai.apk" ]; then
+    APK_FILE="GreenMind.Ai.apk"
+elif [ -f "GreenMind_AI.apk" ]; then
+    APK_FILE="GreenMind_AI.apk"
+elif [ -f "GreenMind_AI_v1.apk" ]; then
+    APK_FILE="GreenMind_AI_v1.apk"
+else
+    # Try to find any APK file in the directory
+    for f in *.apk; do
+        if [ -f "$f" ]; then
+            APK_FILE="$f"
+            break
+        fi
+    done
+fi
+
+if [ -z "$APK_FILE" ]; then
+    echo -e "${RED}[ERROR] No APK file was found in this folder.${NC}"
+    echo -e "Please make sure you have an .apk file (e.g., GreenMind_AI.apk) in this directory."
     echo.
     read -p "Press Enter to exit..."
     exit 1
 fi
+
+echo -e "${GREEN}[OK] Using APK file: $APK_FILE${NC}"
+echo.
 
 # 2. Find or download ADB
 ADB_CMD="adb"
@@ -178,6 +197,8 @@ install_apk() {
         echo.
         echo -e "${RED}[ERROR] Installation failed.${NC}"
         echo -e "Common reasons:"
+        echo -e "  - An older version of the app is already installed with a different signature."
+        echo -e "    Please manually UNINSTALL GreenMind AI from your phone first."
         echo -e "  - Phone screen is locked or has install prompts."
         echo -e "  - Storage is full."
         echo -e "  - Play Protect blocked the install (tap \"Install anyway\" on your phone)."

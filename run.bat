@@ -15,15 +15,25 @@ set "PROJECT_ROOT=%~dp0"
 cd /d "%PROJECT_ROOT%"
 
 :: 1. Check for the APK file
-set "APK_FILE=GreenMind.Ai.apk"
-if not exist "%APK_FILE%" (
+set "APK_FILE="
+if exist "GreenMind.Ai.apk" set "APK_FILE=GreenMind.Ai.apk"
+if not defined APK_FILE if exist "GreenMind_AI.apk" set "APK_FILE=GreenMind_AI.apk"
+if not defined APK_FILE if exist "GreenMind_AI_v1.apk" set "APK_FILE=GreenMind_AI_v1.apk"
+if not defined APK_FILE (
+    for %%f in (*.apk) do set "APK_FILE=%%f"
+)
+
+if not defined APK_FILE (
     color 0C
-    echo [ERROR] %APK_FILE% was not found in this folder.
-    echo Please make sure you downloaded the complete repository from GitHub.
+    echo [ERROR] No APK file was found in this folder.
+    echo Please make sure you have an .apk file, e.g. GreenMind_AI.apk, in this directory.
     echo.
     pause
     exit /b 1
 )
+
+echo [OK] Using APK file: %APK_FILE%
+echo.
 
 :: 2. Find or download ADB
 set "ADB_CMD=adb"
@@ -134,9 +144,11 @@ if %errorlevel% neq 0 (
     echo.
     echo [ERROR] Installation failed.
     echo Common reasons:
+    echo   - An older version of the app is already installed with a different signature.
+    echo     Please manually UNINSTALL GreenMind AI from your phone first.
     echo   - Phone screen is locked or has install prompts.
     echo   - Storage is full.
-    echo   - Play Protect blocked the install (tap "Install anyway" on your phone).
+    echo   - Play Protect blocked the install, tap "Install anyway" on your phone.
     echo.
     pause
     exit /b 1

@@ -9,6 +9,9 @@ set "ADB_PATH=%PROJECT_ROOT%platform-tools-latest-windows\platform-tools"
 :: Add these to the PATH for this session
 set "PATH=%PATH%;%FLUTTER_PATH%;%ADB_PATH%"
 
+:: Set JAVA_HOME to the bundled JDK in Android Studio to fix system path issues
+set "JAVA_HOME=%PROJECT_ROOT%studio\jbr"
+
 echo [1/2] Connecting Device...
 echo ===================================================
 adb devices
