@@ -57,8 +57,8 @@ echo.
 
 :: Accept licenses and install platform 34 and build-tools 34
 mkdir "%SDK_DIR%\licenses"
-echo 24333f8a63b6125eaed176b54d08c69cd7a04d5e > "%SDK_DIR%\licenses\android-sdk-license"
-echo 849d22f16f5b691287102b2257b48a265d2c613e >> "%SDK_DIR%\licenses\android-sdk-license"
+echo 24333f8a63b6125eaed176b54d08c69cd7a04d5e> "%SDK_DIR%\licenses\android-sdk-license"
+echo 849d22f16f5b691287102b2257b48a265d2c613e>> "%SDK_DIR%\licenses\android-sdk-license"
 
 call "%SDK_DIR%\cmdline-tools\latest\bin\sdkmanager.bat" --sdk_root="%SDK_DIR%" "platforms;android-34" "build-tools;34.0.0" "platform-tools"
 
