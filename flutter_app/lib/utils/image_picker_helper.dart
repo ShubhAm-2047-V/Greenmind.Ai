@@ -18,6 +18,22 @@ class ImagePickerHelper {
       
       if (pickedFile == null) {
         debugPrint("pickGalleryImage: User cancelled or no image selected");
+        final dialogContext = (sheetContext != null && sheetContext.mounted) ? sheetContext : (parentContext.mounted ? parentContext : null);
+        if (dialogContext != null) {
+          showDialog(
+            context: dialogContext,
+            builder: (context) => AlertDialog(
+              title: const Text("Picker Debug"),
+              content: const Text("Image picker returned NULL (no image was received by the app)."),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("OK"),
+                )
+              ],
+            ),
+          );
+        }
         return;
       }
       
@@ -27,6 +43,22 @@ class ImagePickerHelper {
       
       if (!parentContext.mounted) {
         debugPrint("pickGalleryImage: Parent context is not mounted after picker returned");
+        final dialogContext = (sheetContext != null && sheetContext.mounted) ? sheetContext : null;
+        if (dialogContext != null) {
+          showDialog(
+            context: dialogContext,
+            builder: (context) => AlertDialog(
+              title: const Text("Picker Debug"),
+              content: const Text("Parent context is NOT mounted. Cannot navigate to Analyze Screen."),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("OK"),
+                )
+              ],
+            ),
+          );
+        }
         return;
       }
 
@@ -38,11 +70,19 @@ class ImagePickerHelper {
       );
     } catch (e) {
       debugPrint("Error picking gallery image: $e");
-      if (parentContext.mounted) {
-        ScaffoldMessenger.of(parentContext).showSnackBar(
-          SnackBar(
-            content: Text("Failed to pick image: $e"),
-            backgroundColor: Colors.red,
+      final dialogContext = (sheetContext != null && sheetContext.mounted) ? sheetContext : (parentContext.mounted ? parentContext : null);
+      if (dialogContext != null) {
+        showDialog(
+          context: dialogContext,
+          builder: (context) => AlertDialog(
+            title: const Text("Picker Error"),
+            content: Text("An error occurred: $e"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("OK"),
+              )
+            ],
           ),
         );
       }
