@@ -37,8 +37,8 @@ class ImagePickerHelper {
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withOpacity(0.4),
       isScrollControlled: true,
-      builder: (BuildContext context) {
-        final lang = Provider.of<LanguageProvider>(context, listen: false);
+      builder: (BuildContext sheetContext) {
+        final lang = Provider.of<LanguageProvider>(sheetContext, listen: false);
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
@@ -103,13 +103,13 @@ class ImagePickerHelper {
                 
                 // Camera Option Button
                 _buildOptionTile(
-                  context: context,
+                  context: sheetContext,
                   title: lang.translate("Take a Photo"),
                   subtitle: lang.translate("Use camera to scan leaf"),
                   icon: Icons.camera_alt_rounded,
                   iconGradientColors: [const Color(0xFF2196F3), const Color(0xFF4CAF50)], // Blue to Green
                   onTap: () {
-                    Navigator.pop(context);
+                    Navigator.pop(sheetContext);
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const CameraCaptureScreen()),
@@ -121,13 +121,13 @@ class ImagePickerHelper {
                 
                 // Gallery Option Button
                 _buildOptionTile(
-                  context: context,
+                  context: sheetContext,
                   title: lang.translate("Choose from Gallery"),
                   subtitle: lang.translate("Select an existing photo"),
                   icon: Icons.photo_library_rounded,
                   iconGradientColors: [const Color(0xFFFF9800), const Color(0xFF2196F3)], // Amber to Blue
                   onTap: () {
-                    Navigator.pop(context);
+                    Navigator.pop(sheetContext);
                     pickGalleryImage(context);
                   },
                 ).animate().fadeIn(duration: 400.ms, delay: 300.ms).slideX(begin: 0.1, end: 0),

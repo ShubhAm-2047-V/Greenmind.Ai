@@ -42,64 +42,79 @@ class _GalleryScreenState extends State<GalleryScreen> {
   Future<void> _loadLocalImages() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      final tempDir = Directory.systemTemp;
       
-      // Check if we need to copy preloaded images
-      final bool alreadyCopied = prefs.getBool('preloaded_images_copied') ?? false;
+      const List<String> preloadedFilenames = [
+        "Early_Blight_of_Tomato1687.jpeg",
+        "disease-on-pear-tree-leaves-260nw-2686391131.webp",
+        "download (2).jpg",
+        "download (24).jpg",
+        "download (28).jpg",
+        "download (29).jpg",
+        "download (3).jpg",
+        "images (1).jpg",
+        "images (2).jpg",
+        "images (3).jpg",
+        "images (4).jpg",
+        "images (5).jpg",
+        "images (6).jpg",
+        "images (7).jpg",
+        "images.jpg",
+        "potato-early-blight-leaves.jpg"
+      ];
       
-      if (!alreadyCopied) {
-        final List<String> copiedPaths = [];
-        final tempDir = Directory.systemTemp;
+      List<String> savedPaths = prefs.getStringList('local_gallery_images') ?? [];
+      List<String> resolvedPaths = [];
+      bool pathsChanged = false;
+      Set<String> resolvedPreloadedFilenames = {};
+
+      for (final path in savedPaths) {
+        final file = File(path);
+        final filename = path.split(RegExp(r'[/\\]')).last;
         
-        const List<String> preloadedFilenames = [
-          "Early_Blight_of_Tomato1687.jpeg",
-          "disease-on-pear-tree-leaves-260nw-2686391131.webp",
-          "download (2).jpg",
-          "download (24).jpg",
-          "download (28).jpg",
-          "download (29).jpg",
-          "download (3).jpg",
-          "images (1).jpg",
-          "images (2).jpg",
-          "images (3).jpg",
-          "images (4).jpg",
-          "images (5).jpg",
-          "images (6).jpg",
-          "images (7).jpg",
-          "images.jpg",
-          "potato-early-blight-leaves.jpg"
-        ];
-        
-        for (final filename in preloadedFilenames) {
+        if (preloadedFilenames.contains(filename)) {
+          resolvedPreloadedFilenames.add(filename);
+          if (await file.exists()) {
+            resolvedPaths.add(path);
+          } else {
+            try {
+              final byteData = await DefaultAssetBundle.of(context).load("assets/preloaded_images/$filename");
+              final newFile = File("${tempDir.path}/$filename");
+              await newFile.writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+              resolvedPaths.add(newFile.path);
+              pathsChanged = true;
+            } catch (assetError) {
+              debugPrint("Error loading preloaded asset $filename: $assetError");
+              resolvedPaths.add(path);
+            }
+          }
+        } else {
+          resolvedPaths.add(path);
+        }
+      }
+
+      for (final filename in preloadedFilenames) {
+        if (!resolvedPreloadedFilenames.contains(filename)) {
           try {
             final byteData = await DefaultAssetBundle.of(context).load("assets/preloaded_images/$filename");
             final file = File("${tempDir.path}/$filename");
             await file.writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
-            copiedPaths.add(file.path);
+            resolvedPaths.add(file.path);
+            pathsChanged = true;
           } catch (assetError) {
             debugPrint("Error loading preloaded asset $filename: $assetError");
           }
         }
-        
-        // Fetch any existing manual stored images
-        final List<String>? existing = prefs.getStringList('local_gallery_images');
-        if (existing != null) {
-          copiedPaths.addAll(existing);
-        }
-        
-        await prefs.setStringList('local_gallery_images', copiedPaths);
-        await prefs.setBool('preloaded_images_copied', true);
-        
-        setState(() {
-          _localImages = copiedPaths;
-        });
-      } else {
-        final List<String>? images = prefs.getStringList('local_gallery_images');
-        if (images != null) {
-          setState(() {
-            _localImages = images;
-          });
-        }
       }
+
+      if (pathsChanged || savedPaths.length != resolvedPaths.length) {
+        await prefs.setStringList('local_gallery_images', resolvedPaths);
+        await prefs.setBool('preloaded_images_copied', true);
+      }
+
+      setState(() {
+        _localImages = resolvedPaths;
+      });
     } catch (e) {
       debugPrint("Error loading local stored images: $e");
     }
