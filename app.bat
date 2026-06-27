@@ -12,6 +12,11 @@ echo.
 echo Compiling the updated app and installing it on your phone...
 echo.
 
+cd /d "%~dp0"
+if not exist "android-sdk\licenses" mkdir "android-sdk\licenses"
+echo 24333f8a63b6125eaed176b54d08c69cd7a04d5e> "android-sdk\licenses\android-sdk-license"
+echo 849d22f16f5b691287102b2257b48a265d2c613e>> "android-sdk\licenses\android-sdk-license"
+
 cd /d "%~dp0flutter_app"
 
 :: Build release APK, bypassing Gradle validation check using the suggested flag
