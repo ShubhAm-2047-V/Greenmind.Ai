@@ -19,6 +19,7 @@ pause >nul
 
 set "SDK_DIR=%~dp0android-sdk"
 set "ADB_CMD=%~dp0platform-tools\adb.exe"
+set "JAVA_HOME=%~dp0studio\jbr"
 
 :: Check if Android SDK is already installed locally in the project
 if exist "%SDK_DIR%\platforms\android-34" (
