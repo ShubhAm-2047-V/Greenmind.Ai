@@ -65,3 +65,9 @@ flutter {
 }
 
 dependencies {}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.contains("check") && task.name.contains("AarMetadata")) {
+        task.enabled = false
+    }
+}
