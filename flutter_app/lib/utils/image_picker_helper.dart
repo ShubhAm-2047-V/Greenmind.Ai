@@ -10,13 +10,10 @@ import '../screens/analyze/analyze_screen.dart';
 import '../screens/home/camera_capture_screen.dart';
 
 class ImagePickerHelper {
-  static Future<void> pickGalleryImage(BuildContext context) async {
+  static Future<void> pickGalleryImage(BuildContext parentContext, {BuildContext? sheetContext}) async {
     try {
       final pickedFile = await ImagePicker().pickImage(
         source: ImageSource.gallery,
-        imageQuality: 70,
-        maxWidth: 800,
-        maxHeight: 800,
       );
       
       if (pickedFile == null) {
@@ -24,21 +21,25 @@ class ImagePickerHelper {
         return;
       }
       
-      if (!context.mounted) {
-        debugPrint("pickGalleryImage: Context is not mounted after picker returned");
+      if (sheetContext != null && sheetContext.mounted) {
+        Navigator.pop(sheetContext);
+      }
+      
+      if (!parentContext.mounted) {
+        debugPrint("pickGalleryImage: Parent context is not mounted after picker returned");
         return;
       }
 
       Navigator.push(
-        context,
+        parentContext,
         MaterialPageRoute(
           builder: (_) => AnalyzeScreen(image: File(pickedFile.path)),
         ),
       );
     } catch (e) {
       debugPrint("Error picking gallery image: $e");
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      if (parentContext.mounted) {
+        ScaffoldMessenger.of(parentContext).showSnackBar(
           SnackBar(
             content: Text("Failed to pick image: $e"),
             backgroundColor: Colors.red,
@@ -144,8 +145,7 @@ class ImagePickerHelper {
                   icon: Icons.photo_library_rounded,
                   iconGradientColors: [const Color(0xFFFF9800), const Color(0xFF2196F3)], // Amber to Blue
                   onTap: () {
-                    Navigator.pop(sheetContext);
-                    pickGalleryImage(context);
+                    pickGalleryImage(context, sheetContext: sheetContext);
                   },
                 ).animate().fadeIn(duration: 400.ms, delay: 300.ms).slideX(begin: 0.1, end: 0),
                 
