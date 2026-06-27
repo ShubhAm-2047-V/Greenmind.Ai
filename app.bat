@@ -4,7 +4,7 @@ color 0A
 cls
 
 echo ==========================================================
-echo           GREENMIND AI ONE-CLICK BUILD & INSTALL          
+echo           GREENMIND AI ONE-CLICK BUILD ^& INSTALL          
 echo ==========================================================
 echo.
 echo This script will automatically:
@@ -51,7 +51,7 @@ del "%SDK_DIR%\tools.zip"
 if exist "%SDK_DIR%\cmdline-tools\latest" rmdir /s /q "%SDK_DIR%\cmdline-tools\latest"
 move "%SDK_DIR%\cmdline-tools\cmdline-tools" "%SDK_DIR%\cmdline-tools\latest"
 
-echo Downloading Android SDK Platform 34 & Build-Tools (approx. 150MB)...
+echo Downloading Android SDK Platform 34 ^& Build-Tools (approx. 150MB)...
 echo This will take a moment, please wait...
 echo.
 
