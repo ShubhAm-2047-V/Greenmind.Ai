@@ -14,8 +14,27 @@ echo.
 
 cd /d "%~dp0"
 if not exist "android-sdk\licenses" mkdir "android-sdk\licenses"
-echo 24333f8a63b6125eaed176b54d08c69cd7a04d5e> "android-sdk\licenses\android-sdk-license"
-echo 849d22f16f5b691287102b2257b48a265d2c613e>> "android-sdk\licenses\android-sdk-license"
+
+(
+echo 893a5a401b58f47e94d877b4d4e40e398c406b4d
+echo 24333f8a63b6125eaed176b54d08c69cd7a04d5e
+echo d56f5187479451eabf01fb78af6dfa131454a745
+echo 601085b94cd77f6b2c12f0c2921037f7d6e4d9f0
+) > "android-sdk\licenses\android-sdk-license"
+
+(
+echo 849d22f16f5b691287102b2257b48a265d2c613e
+echo 79120764a43ba0850267c4b0d34801c268122c23
+) > "android-sdk\licenses\android-sdk-preview-license"
+
+(
+echo 659f5d0b7492ea1f48db2c4b3393282a3730f9db
+echo 329b3cef07b89c37222de4d842278c3c2f9d50c6
+) > "android-sdk\licenses\android-googletv-license"
+
+(
+echo 33b00acfb70cd1cbc2de547a6983c1138a840d4d
+) > "android-sdk\licenses\google-gdk-license"
 
 cd /d "%~dp0flutter_app"
 
