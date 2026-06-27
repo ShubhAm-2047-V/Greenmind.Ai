@@ -18,16 +18,33 @@ class ImagePickerHelper {
         maxWidth: 800,
         maxHeight: 800,
       );
-      if (pickedFile != null && context.mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => AnalyzeScreen(image: File(pickedFile.path)),
+      
+      if (pickedFile == null) {
+        debugPrint("pickGalleryImage: User cancelled or no image selected");
+        return;
+      }
+      
+      if (!context.mounted) {
+        debugPrint("pickGalleryImage: Context is not mounted after picker returned");
+        return;
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AnalyzeScreen(image: File(pickedFile.path)),
+        ),
+      );
+    } catch (e) {
+      debugPrint("Error picking gallery image: $e");
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Failed to pick image: $e"),
+            backgroundColor: Colors.red,
           ),
         );
       }
-    } catch (e) {
-      debugPrint("Error picking gallery image: $e");
     }
   }
 

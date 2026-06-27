@@ -1,33 +1,15 @@
 import 'dart:ui';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../providers/language_provider.dart';
-import '../screens/analyze/analyze_screen.dart';
 import '../utils/image_picker_helper.dart';
 
 class HeroCard extends StatelessWidget {
   const HeroCard({super.key});
 
-  Future<void> _pickGalleryImage(BuildContext context) async {
-    final pickedFile = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 70,
-      maxWidth: 800,
-      maxHeight: 800,
-    );
-    if (pickedFile != null && context.mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => AnalyzeScreen(image: File(pickedFile.path)),
-        ),
-      );
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +61,7 @@ class HeroCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GestureDetector(
-                      onTap: () => _pickGalleryImage(context),
+                      onTap: () => ImagePickerHelper.pickGalleryImage(context),
                       child: Container(
                         height: 140,
                         width: double.infinity,
