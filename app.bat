@@ -3,6 +3,8 @@ title GreenMind AI - Build & Install
 color 0A
 cls
 
+set "JAVA_HOME=%~dp0studio\jbr"
+
 echo ==========================================================
 echo           GREENMIND AI BUILD ^& INSTALL                  
 echo ==========================================================
