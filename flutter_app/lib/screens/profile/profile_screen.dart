@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import 'package:provider/provider.dart';
@@ -7,6 +8,16 @@ import '../../providers/language_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  static const platform = MethodChannel('com.example.app/launcher');
+
+  Future<void> _launchWebsite() async {
+    try {
+      await platform.invokeMethod('launchUrl', {'url': 'https://shubh-deep-labs.vercel.app/'});
+    } on PlatformException catch (e) {
+      debugPrint("Failed to launch URL: '${e.message}'.");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,6 +114,30 @@ class ProfileScreen extends StatelessWidget {
                 },
               ),
             ).animate().fadeIn(delay: 400.ms).slideX(begin: 0.1, end: 0),
+
+            const Spacer(),
+
+            // ShubDeep'Labs Footer Link
+            GestureDetector(
+              onTap: _launchWebsite,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 110.0),
+                  child: Text(
+                    "ShubDeep'Labs",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.green.shade800,
+                      decoration: TextDecoration.underline,
+                      decorationColor: Colors.green.shade800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+            ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.2, end: 0, curve: Curves.easeOutQuad),
           ],
         ),
       ),
