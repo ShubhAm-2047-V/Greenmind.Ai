@@ -57,20 +57,37 @@ if [ -z "$JAVA_HOME" ]; then
     fi
 fi
 
-echo -e "Compiling the updated app..."
-cd "$PROJECT_ROOT/flutter_app"
-
-# Build release APK, bypassing Gradle validation check using the suggested flag
-if ! flutter build apk --release --android-skip-build-dependency-validation; then
-    echo -e "${RED}[ERROR] Compilation failed.${NC}"
-    read -p "Press Enter to exit..."
-    exit 1
+# Check if a pre-compiled APK exists
+COMPILE_CHOICE="Y"
+if [ -f "$PROJECT_ROOT/GreenMind.Ai.apk" ]; then
+    echo -e "A pre-compiled GreenMind.Ai.apk is already available in this folder."
+    read -p "Do you want to rebuild the app from source code first? [Y/N] (Default is N): " COMPILE_CHOICE
 fi
 
-echo.
-echo -e "${GREEN}[OK] Compilation successful!${NC}"
-echo -e "Copying APK to root directory..."
-cp -f "build/app/outputs/flutter-apk/app-release.apk" "$PROJECT_ROOT/GreenMind.Ai.apk"
+if [ -z "$COMPILE_CHOICE" ]; then
+    COMPILE_CHOICE="N"
+fi
+
+if [[ "$COMPILE_CHOICE" == "Y" || "$COMPILE_CHOICE" == "y" ]]; then
+    echo.
+    echo -e "Compiling the updated app from source..."
+    cd "$PROJECT_ROOT/flutter_app"
+
+    # Build release APK, bypassing Gradle validation check using the suggested flag
+    if ! flutter build apk --release --android-skip-build-dependency-validation; then
+        echo -e "${RED}[ERROR] Compilation failed.${NC}"
+        read -p "Press Enter to exit..."
+        exit 1
+    fi
+
+    echo.
+    echo -e "${GREEN}[OK] Compilation successful!${NC}"
+    echo -e "Copying APK to root directory..."
+    cp -f "build/app/outputs/flutter-apk/app-release.apk" "$PROJECT_ROOT/GreenMind.Ai.apk"
+else
+    echo.
+    echo -e "Skipping compilation. Using the existing GreenMind.Ai.apk..."
+fi
 
 echo.
 echo -e "Installing GreenMind.Ai.apk onto your phone..."

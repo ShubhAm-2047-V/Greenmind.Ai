@@ -39,27 +39,43 @@ echo ==========================================================
 echo           GREENMIND AI ONE-CLICK MOBILE INSTALLER          
 echo ==========================================================
 echo.
-echo Compiling the updated app and installing it on your phone...
-echo.
 
-:: Move to the flutter_app directory to compile
-cd /d "%~dp0flutter_app"
-
-:: Build release APK, bypassing Gradle validation check using the suggested flag
-call flutter build apk --release --android-skip-build-dependency-validation
-
-if %errorlevel% neq 0 (
-    color 0C
-    echo.
-    echo [ERROR] Compilation failed.
-    pause
-    exit /b 1
+:: Check if a pre-compiled APK exists
+set "COMPILE_CHOICE=Y"
+if exist "GreenMind.Ai.apk" (
+    echo A pre-compiled GreenMind.Ai.apk is already available in this folder.
+    set /p COMPILE_CHOICE="Do you want to rebuild the app from source code first? [Y/N] (Default is N): "
 )
 
-echo.
-echo [OK] Compilation successful!
-echo Copying APK to root directory...
-copy /y "build\app\outputs\flutter-apk\app-release.apk" "..\GreenMind.Ai.apk"
+if "%COMPILE_CHOICE%"=="" set "COMPILE_CHOICE=N"
+
+if /i "%COMPILE_CHOICE%"=="Y" (
+    echo.
+    echo Compiling the updated app from source...
+    echo.
+
+    :: Move to the flutter_app directory to compile
+    cd /d "%~dp0flutter_app"
+
+    :: Build release APK, bypassing Gradle validation check using the suggested flag
+    call flutter build apk --release --android-skip-build-dependency-validation
+
+    if %errorlevel% neq 0 (
+        color 0C
+        echo.
+        echo [ERROR] Compilation failed.
+        pause
+        exit /b 1
+    )
+
+    echo.
+    echo [OK] Compilation successful!
+    echo Copying APK to root directory...
+    copy /y "build\app\outputs\flutter-apk\app-release.apk" "..\GreenMind.Ai.apk"
+) else (
+    echo.
+    echo Skipping compilation. Using the existing GreenMind.Ai.apk...
+)
 
 echo.
 echo Installing GreenMind.Ai.apk onto your phone...
