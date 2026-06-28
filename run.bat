@@ -84,23 +84,31 @@ echo Installing GreenMind.Ai.apk onto your phone...
 cd /d "%~dp0"
 
 :: Check for existing adb
-set "ADB_CMD=adb"
+set "ADB_CMD="
+
 where adb >nul 2>&1
 if %errorlevel% equ 0 (
+    set "ADB_CMD=adb"
     echo [OK] System-wide ADB detected.
-) else if exist "platform-tools\adb.exe" (
-    set "ADB_CMD=platform-tools\adb.exe"
-    echo [OK] Local ADB detected.
-) else (
-    echo [INFO] ADB (Android Debug Bridge) is not installed.
-    echo Downloading official Google platform-tools for Windows (approx. 8MB)...
+)
+
+if not defined ADB_CMD (
+    if exist "platform-tools\adb.exe" (
+        set "ADB_CMD=platform-tools\adb.exe"
+        echo [OK] Local ADB detected.
+    )
+)
+
+if not defined ADB_CMD (
+    echo [INFO] ADB Android Debug Bridge is not installed.
+    echo Downloading official Google platform-tools for Windows approx 8MB.
     powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://dl.google.com/android/repository/platform-tools-latest-windows.zip' -OutFile 'platform-tools.zip'"
     if not exist "platform-tools.zip" (
         echo [ERROR] Failed to download ADB tools. Check your network connection.
         pause
         exit /b 1
     )
-    echo Extracting ADB tools...
+    echo Extracting ADB tools.
     powershell -Command "Expand-Archive -Path 'platform-tools.zip' -DestinationPath '.' -Force"
     del platform-tools.zip
     if exist "platform-tools\adb.exe" (
@@ -121,16 +129,18 @@ if %errorlevel% neq 0 (
     echo [WARNING] Installation failed.
     echo This is usually because an app with the same package name but a different signature like debug vs release is already installed.
     echo.
+    set "UNINSTALL_CHOICE=N"
     set /p UNINSTALL_CHOICE="Would you like to uninstall the existing app from your device and retry? [Y/N]: "
-    if /i "%UNINSTALL_CHOICE%"=="Y" (
-        color 0A
-        echo.
-        echo Uninstalling the existing app...
-        "%ADB_CMD%" uninstall com.example.flutter_app
-        echo.
-        echo Retrying installation...
-        "%ADB_CMD%" install -r "GreenMind.Ai.apk"
-    )
+)
+
+if /i "%UNINSTALL_CHOICE%"=="Y" (
+    color 0A
+    echo.
+    echo Uninstalling the existing app.
+    "%ADB_CMD%" uninstall com.example.flutter_app
+    echo.
+    echo Retrying installation.
+    "%ADB_CMD%" install -r "GreenMind.Ai.apk"
 )
 
 if %errorlevel% neq 0 (
