@@ -58,11 +58,11 @@ class _ResultScreenState extends State<ResultScreen> {
 
     try {
       final translated = <String, dynamic>{};
-      translated['plant'] = await lang.translateDynamic(widget.resultData['plant']);
-      translated['disease'] = await lang.translateDynamic(widget.resultData['disease']);
-      translated['description'] = await lang.translateDynamic(widget.resultData['description']);
-      translated['cause'] = await lang.translateDynamic(widget.resultData['cause']);
-      translated['solution'] = await lang.translateDynamic(widget.resultData['solution']);
+      translated['plant'] = await lang.translateDynamic(widget.resultData['plant'] ?? "Unknown Plant");
+      translated['disease'] = await lang.translateDynamic(widget.resultData['disease'] ?? "Healthy");
+      translated['description'] = await lang.translateDynamic(widget.resultData['description'] ?? "No description available.");
+      translated['cause'] = await lang.translateDynamic(widget.resultData['cause'] ?? "No cause data available.");
+      translated['solution'] = await lang.translateDynamic(widget.resultData['solution'] ?? "No solution available.");
       translated['confidence'] = widget.resultData['confidence']; // Numbers stay same
       
       if (mounted) {
@@ -95,7 +95,7 @@ class _ResultScreenState extends State<ResultScreen> {
     final data = _translatedData ?? widget.resultData;
 
     String insight = EnvironmentalInsights.getInsight(
-      widget.resultData['disease'],
+      widget.resultData['disease'] ?? "Healthy",
       weather.temperature,
       weather.humidity,
       languageCode: lang.languageCode
@@ -223,15 +223,15 @@ class _ResultScreenState extends State<ResultScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHeaderRow(lang.translate("Plant"), displayData['plant'], Colors.green.shade800).animate().fadeIn(delay: 100.ms).slideX(begin: -0.1, end: 0),
+                  _buildHeaderRow(lang.translate("Plant"), displayData['plant'] ?? "Unknown Plant", Colors.green.shade800).animate().fadeIn(delay: 100.ms).slideX(begin: -0.1, end: 0),
                   const Divider(),
-                  _buildHeaderRow(lang.translate("Disease"), displayData['disease'], Colors.red.shade700).animate().fadeIn(delay: 200.ms).slideX(begin: -0.1, end: 0),
+                  _buildHeaderRow(lang.translate("Disease"), displayData['disease'] ?? "Healthy", Colors.red.shade700).animate().fadeIn(delay: 200.ms).slideX(begin: -0.1, end: 0),
                   const Divider(),
-                  _buildHeaderRow(lang.translate("Confidence"), displayData['confidence'], Colors.blue.shade700).animate().fadeIn(delay: 300.ms).slideX(begin: -0.1, end: 0),
+                  _buildHeaderRow(lang.translate("Confidence"), displayData['confidence'] ?? "0%", Colors.blue.shade700).animate().fadeIn(delay: 300.ms).slideX(begin: -0.1, end: 0),
                   const SizedBox(height: 20),
-                  _buildDetailSection(lang.translate("Description"), displayData['description'], Icons.info_outline).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1, end: 0),
-                  _buildDetailSection(lang.translate("Cause"), displayData['cause'], Icons.bug_report).animate().fadeIn(delay: 500.ms).slideY(begin: 0.1, end: 0),
-                  _buildDetailSection(lang.translate("Solution"), displayData['solution'], Icons.healing).animate().fadeIn(delay: 600.ms).slideY(begin: 0.1, end: 0),
+                  _buildDetailSection(lang.translate("Description"), displayData['description'] ?? "No description available.", Icons.info_outline).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1, end: 0),
+                  _buildDetailSection(lang.translate("Cause"), displayData['cause'] ?? "No cause data available.", Icons.bug_report).animate().fadeIn(delay: 500.ms).slideY(begin: 0.1, end: 0),
+                  _buildDetailSection(lang.translate("Solution"), displayData['solution'] ?? "No solution available.", Icons.healing).animate().fadeIn(delay: 600.ms).slideY(begin: 0.1, end: 0),
                   
                   const SizedBox(height: 25),
                   
@@ -261,7 +261,7 @@ class _ResultScreenState extends State<ResultScreen> {
                           ? const Center(child: CircularProgressIndicator()) 
                           : Text(
                               EnvironmentalInsights.getInsight(
-                                widget.resultData['disease'], 
+                                widget.resultData['disease'] ?? "Healthy", 
                                 weather.temperature, 
                                 weather.humidity,
                                 languageCode: lang.languageCode

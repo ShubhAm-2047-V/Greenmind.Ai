@@ -56,6 +56,14 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // Check if file exists before proceeding
+      final file = File(_currentImage!.path);
+      if (!await file.exists()) {
+        _showError(langProvider.translate("Image file not found. It may have been removed."));
+        setState(() => _isLoading = false);
+        return;
+      }
+
       var request = http.MultipartRequest("POST", Uri.parse(_apiUrl));
       request.files.add(await http.MultipartFile.fromPath("image", _currentImage!.path));
       request.fields['language'] = language;
@@ -96,9 +104,20 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
         }
       } else {
         setState(() => _isLoading = false);
+        String errorMsg = "Analysis failed. Please try again.";
+        try {
+          final Map<String, dynamic> errorData = json.decode(utf8.decode(response.bodyBytes));
+          if (errorData.containsKey('error')) {
+            errorMsg = errorData['error'];
+          }
+        } catch (_) {}
+        _showError(langProvider.translate(errorMsg));
       }
     } catch (e) {
-      // Error is handled by finally for loading state
+      debugPrint("Error in _analyze: $e");
+      if (mounted) {
+        _showError(langProvider.translate("Network error or invalid image file."));
+      }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
