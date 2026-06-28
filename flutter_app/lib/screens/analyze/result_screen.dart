@@ -160,11 +160,39 @@ class _ResultScreenState extends State<ResultScreen> {
     await _ttsService.speak(text, lang);
   }
 
+  String _formatConfidence(dynamic value) {
+    if (value == null) return "0%";
+    String valStr = value.toString().trim();
+    if (valStr.endsWith('%')) {
+      return valStr;
+    }
+    double? parsed = double.tryParse(valStr);
+    if (parsed != null) {
+      if (parsed <= 1.0 && parsed >= 0.0) {
+        double pct = parsed * 100;
+        if (pct % 1 == 0) {
+          return "${pct.toInt()}%";
+        } else {
+          return "${pct.toStringAsFixed(1)}%";
+        }
+      } else {
+        if (parsed % 1 == 0) {
+          return "${parsed.toInt()}%";
+        } else {
+          return "${parsed.toStringAsFixed(1)}%";
+        }
+      }
+    }
+    return "$valStr%";
+  }
+
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
     final weather = Provider.of<WeatherProvider>(context);
-    final displayData = _translatedData ?? widget.resultData;
+    final Map<String, dynamic> rawDisplayData = _translatedData ?? widget.resultData;
+    final Map<String, dynamic> displayData = Map<String, dynamic>.from(rawDisplayData);
+    displayData['confidence'] = _formatConfidence(displayData['confidence']);
 
     return Scaffold(
       appBar: AppBar(
@@ -255,7 +283,7 @@ class _ResultScreenState extends State<ResultScreen> {
                         Icons.bar_chart, 
                         lang.translate("View Graph"), 
                         Colors.orange, 
-                        () => Navigator.push(context, MaterialPageRoute(builder: (_) => GraphScreen(confidence: widget.resultData['confidence'])))
+                        () => Navigator.push(context, MaterialPageRoute(builder: (_) => GraphScreen(confidence: displayData['confidence'])))
                       ),
                       _actionButton(
                         context, 
