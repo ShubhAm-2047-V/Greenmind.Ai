@@ -58,10 +58,12 @@ if [ -z "$JAVA_HOME" ]; then
 fi
 
 # Check if a pre-compiled APK exists
-COMPILE_CHOICE="Y"
+COMPILE_CHOICE=""
 if [ -f "$PROJECT_ROOT/GreenMind.Ai.apk" ]; then
     echo -e "A pre-compiled GreenMind.Ai.apk is already available in this folder."
     read -p "Do you want to rebuild the app from source code first? [Y/N] (Default is N): " COMPILE_CHOICE
+else
+    COMPILE_CHOICE="Y"
 fi
 
 if [ -z "$COMPILE_CHOICE" ]; then

@@ -41,10 +41,12 @@ echo ==========================================================
 echo.
 
 :: Check if a pre-compiled APK exists
-set "COMPILE_CHOICE=Y"
+set "COMPILE_CHOICE="
 if exist "GreenMind.Ai.apk" (
     echo A pre-compiled GreenMind.Ai.apk is already available in this folder.
     set /p COMPILE_CHOICE="Do you want to rebuild the app from source code first? [Y/N] (Default is N): "
+) else (
+    set "COMPILE_CHOICE=Y"
 )
 
 if "%COMPILE_CHOICE%"=="" set "COMPILE_CHOICE=N"
