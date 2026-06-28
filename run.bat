@@ -6,9 +6,33 @@ cls
 :: Ensure the script runs in its own directory (root directory)
 cd /d "%~dp0"
 
-:: Resolve JAVA_HOME to an absolute path if the local studio JBR directory exists
-if exist "studio\jbr" (
-    for %%i in ("studio\jbr") do set "JAVA_HOME=%%~fi"
+:: 1. If system JAVA_HOME is set but invalid, clear it
+if defined JAVA_HOME (
+    if not exist "%JAVA_HOME%\bin\java.exe" (
+        echo [WARNING] System JAVA_HOME points to an invalid directory: %JAVA_HOME%
+        echo Clearing it to allow automatic detection...
+        set "JAVA_HOME="
+    )
+)
+
+:: 2. Try to find local JBR folder in workspace
+if not defined JAVA_HOME (
+    if exist "studio\jbr" (
+        for %%i in ("studio\jbr") do set "JAVA_HOME=%%~fi"
+    )
+)
+
+:: 3. Try to locate standard Android Studio installation paths on Windows
+if not defined JAVA_HOME (
+    if exist "%ProgramFiles%\Android\Android Studio\jbr" (
+        set "JAVA_HOME=%ProgramFiles%\Android\Android Studio\jbr"
+    ) else if exist "%ProgramFiles%\Android\Android Studio\jre" (
+        set "JAVA_HOME=%ProgramFiles%\Android\Android Studio\jre"
+    ) else if exist "%LocalAppData%\Programs\Android Studio\jbr" (
+        set "JAVA_HOME=%LocalAppData%\Programs\Android Studio\jbr"
+    ) else if exist "%LocalAppData%\Programs\Android Studio\jre" (
+        set "JAVA_HOME=%LocalAppData%\Programs\Android Studio\jre"
+    )
 )
 
 echo ==========================================================

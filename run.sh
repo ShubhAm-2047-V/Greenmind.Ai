@@ -18,14 +18,43 @@ echo.
 PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$PROJECT_ROOT"
 
-# Resolve JAVA_HOME to an absolute path if the local studio JBR directory exists
-if [ -d "studio/jbr" ]; then
-    if [ -d "studio/jbr/Contents/Home" ]; then
-        export JAVA_HOME="$PROJECT_ROOT/studio/jbr/Contents/Home"
-    else
-        export JAVA_HOME="$PROJECT_ROOT/studio/jbr"
+# 1. If system JAVA_HOME is set but invalid, clear it
+if [ -n "$JAVA_HOME" ]; then
+    if [ ! -f "$JAVA_HOME/bin/java" ]; then
+        echo -e "${YELLOW}[WARNING] System JAVA_HOME points to an invalid directory: $JAVA_HOME${NC}"
+        echo -e "Clearing it to allow automatic detection...${NC}"
+        unset JAVA_HOME
     fi
-    echo -e "${GREEN}[INFO] Using local JBR for JAVA_HOME: $JAVA_HOME${NC}"
+fi
+
+# 2. Try to find local JBR folder in workspace
+if [ -z "$JAVA_HOME" ]; then
+    if [ -d "studio/jbr" ]; then
+        if [ -d "studio/jbr/Contents/Home" ]; then
+            export JAVA_HOME="$PROJECT_ROOT/studio/jbr/Contents/Home"
+        else
+            export JAVA_HOME="$PROJECT_ROOT/studio/jbr"
+        fi
+        echo -e "${GREEN}[INFO] Using local JBR for JAVA_HOME: $JAVA_HOME${NC}"
+    fi
+fi
+
+# 3. Try to locate standard Android Studio installation paths on macOS/Linux
+if [ -z "$JAVA_HOME" ]; then
+    OS_TYPE="$(uname -s)"
+    if [ "$OS_TYPE" == "Darwin" ]; then
+        if [ -d "/Applications/Android Studio.app/Contents/jbr/Contents/Home" ]; then
+            export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+        elif [ -d "/Applications/Android Studio.app/Contents/jre/Contents/Home" ]; then
+            export JAVA_HOME="/Applications/Android Studio.app/Contents/jre/Contents/Home"
+        fi
+    elif [ "$OS_TYPE" == "Linux" ]; then
+        if [ -d "/opt/android-studio/jbr" ]; then
+            export JAVA_HOME="/opt/android-studio/jbr"
+        elif [ -d "/usr/local/android-studio/jbr" ]; then
+            export JAVA_HOME="/usr/local/android-studio/jbr"
+        fi
+    fi
 fi
 
 echo -e "Compiling the updated app..."
