@@ -85,8 +85,32 @@ cd /d "%~dp0"
 
 :: Check for existing adb
 set "ADB_CMD=adb"
-if exist "platform-tools\adb.exe" (
+where adb >nul 2>&1
+if %errorlevel% equ 0 (
+    echo [OK] System-wide ADB detected.
+) else if exist "platform-tools\adb.exe" (
     set "ADB_CMD=platform-tools\adb.exe"
+    echo [OK] Local ADB detected.
+) else (
+    echo [INFO] ADB (Android Debug Bridge) is not installed.
+    echo Downloading official Google platform-tools for Windows (approx. 8MB)...
+    powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://dl.google.com/android/repository/platform-tools-latest-windows.zip' -OutFile 'platform-tools.zip'"
+    if not exist "platform-tools.zip" (
+        echo [ERROR] Failed to download ADB tools. Check your network connection.
+        pause
+        exit /b 1
+    )
+    echo Extracting ADB tools...
+    powershell -Command "Expand-Archive -Path 'platform-tools.zip' -DestinationPath '.' -Force"
+    del platform-tools.zip
+    if exist "platform-tools\adb.exe" (
+        set "ADB_CMD=platform-tools\adb.exe"
+        echo [OK] ADB tools installed successfully!
+    ) else (
+        echo [ERROR] Extraction failed. Could not locate adb.exe.
+        pause
+        exit /b 1
+    )
 )
 
 "%ADB_CMD%" install -r "GreenMind.Ai.apk"
