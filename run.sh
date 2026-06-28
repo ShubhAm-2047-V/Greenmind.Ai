@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# GreenMind AI One-Click USB Installer for macOS & Linux
+# GreenMind AI One-Click Installer for macOS & Linux
 
 # ANSI Color codes for beautiful terminal output
 GREEN='\033[0;32m'
@@ -11,44 +11,44 @@ NC='\033[0m' # No Color
 echo -e "${GREEN}==========================================================${NC}"
 echo -e "${GREEN}           GREENMIND AI ONE-CLICK INSTALLER               ${NC}"
 echo -e "${GREEN}==========================================================${NC}"
-echo -e "This script will install GreenMind AI on your Android phone"
-echo -e "over USB without needing Android Studio or Flutter installed."
+echo -e "This script will compile the app and install it on your phone."
 echo.
 
 # Get current script directory
 PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$PROJECT_ROOT"
 
-# 1. Check for the APK file
-APK_FILE=""
-if [ -f "GreenMind.Ai.apk" ]; then
-    APK_FILE="GreenMind.Ai.apk"
-elif [ -f "GreenMind_AI.apk" ]; then
-    APK_FILE="GreenMind_AI.apk"
-elif [ -f "GreenMind_AI_v1.apk" ]; then
-    APK_FILE="GreenMind_AI_v1.apk"
-else
-    # Try to find any APK file in the directory
-    for f in *.apk; do
-        if [ -f "$f" ]; then
-            APK_FILE="$f"
-            break
-        fi
-    done
+# Resolve JAVA_HOME to an absolute path if the local studio JBR directory exists
+if [ -d "studio/jbr" ]; then
+    if [ -d "studio/jbr/Contents/Home" ]; then
+        export JAVA_HOME="$PROJECT_ROOT/studio/jbr/Contents/Home"
+    else
+        export JAVA_HOME="$PROJECT_ROOT/studio/jbr"
+    fi
+    echo -e "${GREEN}[INFO] Using local JBR for JAVA_HOME: $JAVA_HOME${NC}"
 fi
 
-if [ -z "$APK_FILE" ]; then
-    echo -e "${RED}[ERROR] No APK file was found in this folder.${NC}"
-    echo -e "Please make sure you have an .apk file (e.g., GreenMind_AI.apk) in this directory."
-    echo.
+echo -e "Compiling the updated app..."
+cd "$PROJECT_ROOT/flutter_app"
+
+# Build release APK, bypassing Gradle validation check using the suggested flag
+if ! flutter build apk --release --android-skip-build-dependency-validation; then
+    echo -e "${RED}[ERROR] Compilation failed.${NC}"
     read -p "Press Enter to exit..."
     exit 1
 fi
 
-echo -e "${GREEN}[OK] Using APK file: $APK_FILE${NC}"
 echo.
+echo -e "${GREEN}[OK] Compilation successful!${NC}"
+echo -e "Copying APK to root directory..."
+cp -f "build/app/outputs/flutter-apk/app-release.apk" "$PROJECT_ROOT/GreenMind.Ai.apk"
 
-# 2. Find or download ADB
+echo.
+echo -e "Installing GreenMind.Ai.apk onto your phone..."
+cd "$PROJECT_ROOT"
+
+# Detect Operating System for ADB selection
+OS_TYPE="$(uname -s)"
 ADB_CMD="adb"
 
 if command -v adb >/dev/null 2>&1; then
@@ -57,10 +57,7 @@ elif [ -f "./platform-tools/adb" ]; then
     ADB_CMD="./platform-tools/adb"
     echo -e "${GREEN}[OK] Local ADB detected.${NC}"
 else
-    echo -e "${YELLOW}[INFO] ADB (Android Debug Bridge) is not installed.${NC}"
-    
-    # Detect Operating System
-    OS_TYPE="$(uname -s)"
+    echo -e "${YELLOW}[INFO] ADB is not installed. Setting up platform-tools...${NC}"
     case "$OS_TYPE" in
         Darwin)
             DOWNLOAD_URL="https://dl.google.com/android/repository/platform-tools-latest-darwin.zip"
@@ -69,142 +66,81 @@ else
             DOWNLOAD_URL="https://dl.google.com/android/repository/platform-tools-latest-linux.zip"
             ;;
         *)
-            echo -e "${RED}[ERROR] Unsupported OS: $OS_TYPE. Please use Windows, macOS, or Linux.${NC}"
+            echo -e "${RED}[ERROR] Unsupported OS: $OS_TYPE. Please use run.bat on Windows.${NC}"
             read -p "Press Enter to exit..."
             exit 1
             ;;
     esac
 
-    echo -e "Downloading lightweight official Google platform-tools for $OS_TYPE (approx. 8MB)..."
-    echo -e "Please wait..."
-    echo.
-
-    # Try downloading with curl, fallback to wget
+    echo -e "Downloading ADB platform-tools for $OS_TYPE..."
     if command -v curl >/dev/null 2>&1; then
         curl -L -o platform-tools.zip "$DOWNLOAD_URL"
     elif command -v wget >/dev/null 2>&1; then
         wget -O platform-tools.zip "$DOWNLOAD_URL"
     else
-        echo -e "${RED}[ERROR] Neither curl nor wget was found on your system.${NC}"
-        echo -e "Please install curl or wget and run this script again."
+        echo -e "${RED}[ERROR] Neither curl nor wget was found. Please install one to proceed.${NC}"
         read -p "Press Enter to exit..."
         exit 1
     fi
 
-    if [ ! -f "platform-tools.zip" ]; then
-        echo -e "${RED}[ERROR] Failed to download ADB tools. Check your network connection.${NC}"
-        read -p "Press Enter to exit..."
-        exit 1
+    if [ -f "platform-tools.zip" ]; then
+        if command -v unzip >/dev/null 2>&1; then
+            unzip -o platform-tools.zip
+        else
+            python3 -c "import zipfile; zipfile.ZipFile('platform-tools.zip').extractall('.')"
+        fi
+        rm platform-tools.zip
     fi
-
-    echo -e "Extracting ADB tools..."
-    if command -v unzip >/dev/null 2>&1; then
-        unzip -o platform-tools.zip
-    else
-        # Try python as backup for extraction
-        python3 -c "import zipfile; zipfile.ZipFile('platform-tools.zip').extractall('.')"
-    fi
-    rm platform-tools.zip
 
     if [ -f "./platform-tools/adb" ]; then
         chmod +x ./platform-tools/adb
         ADB_CMD="./platform-tools/adb"
-        echo -e "${GREEN}[OK] ADB tools installed successfully!${NC}"
-        echo.
     else
-        echo -e "${RED}[ERROR] Extraction failed. Could not locate adb binary.${NC}"
+        echo -e "${RED}[ERROR] ADB setup failed.${NC}"
         read -p "Press Enter to exit..."
         exit 1
     fi
 fi
 
-# 3. Detect Connected Device
-check_device() {
-    echo -e "${GREEN}==========================================================${NC}"
-    echo -e "${GREEN}           DETECTING CONNECTED ANDROID DEVICE              ${NC}"
-    echo -e "${GREEN}==========================================================${NC}"
-    echo -e "Please ensure:"
-    echo -e "  1. Your Android phone is connected to this computer via USB."
-    echo -e "  2. \"USB Debugging\" is ENABLED in Developer Options on your phone."
-    echo.
+# Run install and handle signature conflicts
+install_output=$("$ADB_CMD" install -r "GreenMind.Ai.apk" 2>&1)
+install_status=$?
 
-    devices_output=$("$ADB_CMD" devices)
-    
-    # Parse adb devices output
-    # Skip the first line (header) and search for status
-    DEVICE_FOUND=0
-    UNAUTHORIZED=0
-    
-    while read -r line; do
-        # Ignore empty lines and the header line
-        if [ -n "$line" ] && [[ "$line" != "List of devices"* ]]; then
-            status=$(echo "$line" | awk '{print $2}')
-            if [ "$status" == "device" ]; then
-                DEVICE_FOUND=1
-            elif [ "$status" == "unauthorized" ]; then
-                UNAUTHORIZED=1
+if [ $install_status -ne 0 ]; then
+    echo -e "$install_output"
+    if [[ "$install_output" == *"INSTALL_FAILED_UPDATE_INCOMPATIBLE"* || "$install_output" == *"signatures do not match"* ]]; then
+        echo.
+        echo -e "${YELLOW}[WARNING] Installation failed due to signature mismatch.${NC}"
+        echo -e "An app with the same package name but a different signature is already installed."
+        read -p "Would you like to uninstall the existing app from your device and retry? [Y/N]: " UNINSTALL_CHOICE
+        if [[ "$UNINSTALL_CHOICE" == "Y" || "$UNINSTALL_CHOICE" == "y" ]]; then
+            echo.
+            echo -e "Uninstalling the existing app..."
+            "$ADB_CMD" uninstall com.example.flutter_app
+            echo.
+            echo -e "Retrying installation..."
+            if "$ADB_CMD" install -r "GreenMind.Ai.apk"; then
+                install_status=0
             fi
         fi
-    done <<< "$devices_output"
-
-    if [ "$DEVICE_FOUND" -eq 1 ]; then
-        echo -e "${GREEN}[OK] Device detected!${NC}"
-        install_apk
-    elif [ "$UNAUTHORIZED" -eq 1 ]; then
-        echo -e "${YELLOW}[WARNING] A device is connected but UNAUTHORIZED.${NC}"
-        echo -e "Please check your phone screen and tap \"Allow USB debugging\"."
-        echo.
-        read -p "Press Enter to try again..."
-        check_device
-    else
-        echo -e "${YELLOW}[INFO] Looking for device... (Make sure screen is unlocked)${NC}"
-        echo.
-        read -p "Press Enter to retry device detection..."
-        check_device
     fi
-}
+fi
 
-# 4. Install the APK
-install_apk() {
+if [ $install_status -ne 0 ]; then
     echo.
-    echo -e "${GREEN}==========================================================${NC}"
-    echo -e "${GREEN}                INSTALLING GREENMIND AI                    ${NC}"
-    echo -e "${GREEN}==========================================================${NC}"
-    echo -e "Installing $APK_FILE to your device..."
-    echo -e "This might take 10-30 seconds depending on your device."
-    echo -e "Please do not disconnect the USB cable."
-    echo.
+    echo -e "${RED}[ERROR] Installation failed.${NC}"
+    read -p "Press Enter to exit..."
+    exit 1
+fi
 
-    if "$ADB_CMD" install -r "$APK_FILE"; then
-        echo.
-        echo -e "${GREEN}[OK] Application installed successfully!${NC}"
-        echo -e "Launching GreenMind AI on your device..."
-        
-        # 5. Launch the app
-        "$ADB_CMD" shell am start -n com.example.flutter_app/com.example.flutter_app.MainActivity >/dev/null 2>&1
-        
-        echo.
-        echo -e "${GREEN}==========================================================${NC}"
-        echo -e "${GREEN}                   SUCCESSFULLY FINISHED                   ${NC}"
-        echo -e "${GREEN}==========================================================${NC}"
-        echo -e "Greetings From ShubDeep Labs, your app is downloaded on mobile so enjoy your app!"
-        echo
-        read -p "Press Enter to exit..."
-        exit 0
-    else
-        echo.
-        echo -e "${RED}[ERROR] Installation failed.${NC}"
-        echo -e "Common reasons:"
-        echo -e "  - An older version of the app is already installed with a different signature."
-        echo -e "    Please manually UNINSTALL GreenMind AI from your phone first."
-        echo -e "  - Phone screen is locked or has install prompts."
-        echo -e "  - Storage is full."
-        echo -e "  - Play Protect blocked the install (tap \"Install anyway\" on your phone)."
-        echo.
-        read -p "Press Enter to exit..."
-        exit 1
-    fi
-}
+echo.
+echo -e "${GREEN}[OK] Installed successfully!${NC}"
+echo -e "Launching the app on your phone..."
+"$ADB_CMD" shell am start -n com.example.flutter_app/com.example.flutter_app.MainActivity >/dev/null 2>&1
 
-# Start device check loop
-check_device
+echo.
+echo -e "${GREEN}==========================================================${NC}"
+echo -e "${GREEN}                   SUCCESSFULLY FINISHED                   ${NC}"
+echo -e "${GREEN}==========================================================${NC}"
+echo.
+read -p "Press Enter to exit..."

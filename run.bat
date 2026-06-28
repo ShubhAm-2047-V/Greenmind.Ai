@@ -1,9 +1,15 @@
 @echo off
-title GreenMind AI - One-Click Mobile Installer
+title "GreenMind AI - One-Click Mobile Installer"
 color 0A
 cls
 
-set "JAVA_HOME=%~dp0studio\jbr"
+:: Ensure the script runs in its own directory (root directory)
+cd /d "%~dp0"
+
+:: Resolve JAVA_HOME to an absolute path if the local studio JBR directory exists
+if exist "studio\jbr" (
+    for %%i in ("studio\jbr") do set "JAVA_HOME=%%~fi"
+)
 
 echo ==========================================================
 echo           GREENMIND AI ONE-CLICK MOBILE INSTALLER          
@@ -12,6 +18,7 @@ echo.
 echo Compiling the updated app and installing it on your phone...
 echo.
 
+:: Move to the flutter_app directory to compile
 cd /d "%~dp0flutter_app"
 
 :: Build release APK, bypassing Gradle validation check using the suggested flag
@@ -41,6 +48,24 @@ if exist "platform-tools\adb.exe" (
 )
 
 "%ADB_CMD%" install -r "GreenMind.Ai.apk"
+
+if %errorlevel% neq 0 (
+    color 0E
+    echo.
+    echo [WARNING] Installation failed.
+    echo This is usually because an app with the same package name but a different signature like debug vs release is already installed.
+    echo.
+    set /p UNINSTALL_CHOICE="Would you like to uninstall the existing app from your device and retry? [Y/N]: "
+    if /i "%UNINSTALL_CHOICE%"=="Y" (
+        color 0A
+        echo.
+        echo Uninstalling the existing app...
+        "%ADB_CMD%" uninstall com.example.flutter_app
+        echo.
+        echo Retrying installation...
+        "%ADB_CMD%" install -r "GreenMind.Ai.apk"
+    )
+)
 
 if %errorlevel% neq 0 (
     color 0C
